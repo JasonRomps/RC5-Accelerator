@@ -3,7 +3,7 @@ module algo(
     input logic rst,
     input logic encrypt,
     input logic decrypt,
-    input logic [4:0] num_rounds,
+    input logic [4:0] num_rounds,   //when the user specifies num_rounds it is not 0 indexed
     input logic [127:0] key,
     input logic [31:0] d_in,
     output logic [31:0] d_out,
@@ -58,6 +58,7 @@ always_comb begin
 
         ENCRYPT_START: begin
             counter_active = 1;
+            done = 0;
             if(round_counter == num_rounds) begin
                 top_level_next_state = ENCRYPT_DONE;
             end
@@ -66,7 +67,7 @@ always_comb begin
             end
             else begin
                 //algo logic here
-
+                
 
 
 
