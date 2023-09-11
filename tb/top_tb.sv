@@ -1,4 +1,4 @@
-module algo_block_level;
+module top_tb;
 
 
 logic clk;
