@@ -130,3 +130,15 @@ class RC5:
                 break
         return res.rstrip(b'\x00')
 
+
+if __name__ == "__main__":
+    BLOCK_SIZE = 16
+    NUM_ROUNDS = 12
+    KEY = b'\xde\xad\xbe\xef\xde\xad\xbe\xef\xde\xad\xbe\xef\xde\xad\xbe\xef'
+
+    r = RC5(BLOCK_SIZE, NUM_ROUNDS, KEY)
+
+    enc = r.encryptBlock(b'\x10\x00\x20\x00')
+    print(enc)
+    dec = r.decryptBlock(enc)
+    print(dec)

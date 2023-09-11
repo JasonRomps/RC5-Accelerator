@@ -1,6 +1,6 @@
 TARGET_EXEC := main
 TEST_EXEC := test
-CXX := clang++
+# CXX := clang++
 
 BUILD_DIR := ./build
 SRC_DIRS := ./src
@@ -30,7 +30,7 @@ INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
 # The -MMD and -MP flags together generate Makefiles for us!
 # These files will have .d instead of .o as the output.
-CPPFLAGS := $(INC_FLAGS) -MMD -MP -std=c++17 -O3
+CPPFLAGS := $(INC_FLAGS) -MMD -MP -std=c++11 -g -Wall
 
 $(TARGET_EXEC): $(OBJS) $(MAIN_OBJ)
 	$(CXX) $(OBJS) $(MAIN_OBJ) -o $@ $(LDFLAGS)
