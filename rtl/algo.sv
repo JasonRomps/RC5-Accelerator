@@ -70,7 +70,7 @@ end
 //TOP LEVEL COMBO LOGIC
 always_comb begin 
 
-    case(top_level_curr_state)
+    case(algo_state)
 
         IDLE: begin
             done = 0;
