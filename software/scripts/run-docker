@@ -1,0 +1,3 @@
+#! /bin/bash
+
+docker run -v $(pwd):/rc5 -it ubuntu-dev bash
