@@ -40,8 +40,6 @@ initial begin
     num_rounds = 0;
     key = 0;
     d_in = 0;
-    d_out = 0;
-    done = 0;
 
     #10;
 
