@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 module top_tb;
 
 
@@ -34,6 +35,8 @@ end
 
 
 initial begin
+    $fsdbDumpfile("dump.fsdb");
+	$fsdbDumpvars(0, "+all");
     rst = 1;
     encrypt = 0;
     decrypt = 0;
