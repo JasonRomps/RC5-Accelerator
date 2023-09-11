@@ -1,7 +1,7 @@
 import pytest
 import time
 
-from rc5 import RC5
+from src.rc5 import RC5
 
 BLOCK_SIZE = 16
 NUM_ROUNDS = 12
