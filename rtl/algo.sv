@@ -81,7 +81,7 @@ always_comb begin
                 algo_next_state = ENCRYPT_DONE;
             end
             else if(decrypt && num_rounds == 0) begin
-                algo_next_state = ENCRYPT_DONE;
+                algo_next_state = DECRYPT_DONE;
             end
             else if(encrypt) begin
                 algo_next_state = ENCRYPT_1;
