@@ -47,41 +47,60 @@ task reset();
     ##1;
 endtask
 
-initial begin
-    $fsdbDumpfile("dump.fsdb");
-	$fsdbDumpvars(0, "+all");
+task set_defaults();
     rst <= 1;
     encrypt <= 0;
     decrypt <= 0;
     num_rounds <= 12;
     key <= 0;
     d_in <= 0;
+endtask
 
-    reset();
-
-    // Ensure encrypt state machine works
-    d_in <= 32'hecebeceb;
+task do_encrypt(input logic [31:0] data_i);
+    d_in <= data_i;
     encrypt <= 1'b1;
     ##1;
-    $display("Initial Value: %x", d_in);
     encrypt <= 1'b0;
     while(done != 1'b1) begin
         ##1;
     end
-    $display("Encrypted Value: %x", d_out);
     temp_data <= d_out;
     ##1;
+endtask
 
-    // Ensure decrypt state machine works
-    d_in <= temp_data;
+task do_decrypt(input logic [31:0] data_i); 
+    d_in <= data_i;
     decrypt <= 1'b1;
     ##1;
     decrypt <= 1'b0;
     while(done != 1'b1) begin
         ##1;
     end
-    $display("Decrypted Value: %x", d_out);
+    temp_data <= d_out;
+    ##1;
+endtask
 
+function check_encryption(input logic [31:0] data_i);
+    assert (data_i == temp_data) 
+        else begin
+            $error("Encryption/Decryption Failed: data in (0x%x) != data out (0x%x)", data_i, temp_data);
+            $finish;
+        end
+endfunction
+
+
+initial begin
+    $fsdbDumpfile("dump.fsdb");
+	$fsdbDumpvars(0, "+all");
+    set_defaults();
+    reset();
+
+    // Ensure encrypt state machine works
+    do_encrypt(32'hecebeceb);
+    do_decrypt(temp_data);
+    check_encryption(32'hecebeceb);
+
+    $display("SUCCESS: TESTBENCH ENDED WITHOUT ERROR");
     $finish;
 
 end
