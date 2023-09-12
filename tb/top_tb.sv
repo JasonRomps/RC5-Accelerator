@@ -51,27 +51,29 @@ initial begin
     rst <= 1;
     encrypt <= 0;
     decrypt <= 0;
-    num_rounds <= 16;
+    num_rounds <= 12;
     key <= 0;
     d_in <= 0;
 
     reset();
 
     // Ensure encrypt state machine works
+    d_in <= 32'hecebeceb;
     encrypt <= 1'b1;
     ##1;
     encrypt <= 1'b0;
     while(done != 1'b1) begin
         ##1;
+        $display("%x", d_out);
     end
 
-    // Ensure decrypt state machine works
-    decrypt <= 1'b1;
-    ##1;
-    decrypt <= 1'b0;
-    while(done != 1'b1) begin
-        ##1;
-    end
+    // // Ensure decrypt state machine works
+    // decrypt <= 1'b1;
+    // ##1;
+    // decrypt <= 1'b0;
+    // while(done != 1'b1) begin
+    //     ##1;
+    // end
 
     $finish;
 

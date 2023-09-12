@@ -52,13 +52,12 @@ parameter DECRYPT_14 = 6'b111101;
 parameter DECRYPT_15 = 6'b111110;
 parameter DECRYPT_16 = 6'b111111;
 
-//logic counter_active;
-
-//logic [4:0] round_counter;
 
 logic [15:0] A, B, new_A, new_B;
 logic [15:0] A_rot_out, B_rot_out;
 logic [15:0] Subkeys [33:0];
+
+// assign Subkeys = {16'd55048, 16'd43744, 16'd48559, 16'd27403, 16'd20374, 16'd33387, 16'd2062, 16'd61013, 16'd49237, 16'd33709, 16'd16278, 16'd65452, 16'd9968, 16'd4572, 16'd34933, 16'd35205, 16'd37470, 16'd42119, 16'd21025, 16'd13567, 16'd19718, 16'd1446, 16'd11664, 16'd40137, 16'd19576, 16'd15720, 16'd15720,16'd15720,16'd15720,16'd15720,16'd15720,16'd15720,16'd15720,16'd15720};
 
 rotl A_Rotl(
 	.data_i(A^B),
@@ -79,9 +78,9 @@ always_ff @ (posedge clk) begin
 		A <= 16'd0;
 		B <= 16'd0;
 
-		for(int i = 0; i < 34; i++) begin
-			Subkeys[i] <= 0;
-		end
+		// for(int i = 0; i < 34; i++) begin
+		// 	Subkeys[i] <= 0;
+		// end
     end
     else begin
         algo_state <= algo_next_state;
@@ -133,8 +132,8 @@ always_comb begin
 
 		ENCRYPT_INIT: begin
 			algo_next_state = ENCRYPT_1;
-			new_A = d_in[15:0] + S[0];
-			new_B = d_in[31:16] + S[1];
+			new_A = d_in[15:0] + Subkeys[0];
+			new_B = d_in[31:16] + Subkeys[1];
 			//encryption logic
 		end
 		ENCRYPT_1: begin
