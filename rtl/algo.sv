@@ -3,7 +3,7 @@ module algo(
     input logic rst,
     input logic encrypt,
     input logic decrypt,
-    input logic [3:0] num_rounds,   //when the user specifies num_rounds it is not 0 indexed
+    input logic [4:0] num_rounds,   //when the user specifies num_rounds it is not 0 indexed
     input logic [127:0] key,
     input logic [31:0] d_in,
     output logic [31:0] d_out,
@@ -11,8 +11,7 @@ module algo(
 );
 
 logic [5:0] algo_state, algo_next_state;
-
-
+ 
 parameter IDLE = 6'b000000;
 parameter ENCRYPT_DONE = 6'b000001;
 parameter DECRYPT_DONE = 6'b000010;
@@ -70,10 +69,12 @@ end
 //TOP LEVEL COMBO LOGIC
 always_comb begin 
 
+    // Defaults
+    done = 1'b0;
+
     case(algo_state)
 
         IDLE: begin
-            done = 0;
             if(rst == 0) begin
                 algo_next_state = IDLE;
             end
@@ -93,105 +94,91 @@ always_comb begin
 
 
         ENCRYPT_DONE: begin
-            done = 1;
+            done = 1'b1;
             algo_next_state = IDLE; 
         end
 
         DECRYPT_DONE: begin
-            done = 1;
+            done = 1'b1;
             algo_next_state = IDLE;
         
         end
 
-        ENCRYPT_1: begin
-            if(num_rounds == 1)
-                algo_next_state = ENCRYPT_DONE;
-            //encryption logic
-        end
+		ENCRYPT_1: begin
+			algo_next_state = (num_rounds == 1) ? ENCRYPT_DONE : ENCRYPT_2;
 
-        ENCRYPT_2: begin
-            if(num_rounds == 2)
-                algo_next_state = ENCRYPT_DONE;
-            //encryption logic
-        end
+			//encryption logic
+		end
+		ENCRYPT_2: begin
+			algo_next_state = (num_rounds == 2) ? ENCRYPT_DONE : ENCRYPT_3;
 
-        ENCRYPT_3: begin
-            if(num_rounds == 3)
-                algo_next_state = ENCRYPT_DONE;
-            //encryption logic
-        end
+			//encryption logic
+		end
+		ENCRYPT_3: begin
+			algo_next_state = (num_rounds == 3) ? ENCRYPT_DONE : ENCRYPT_4;
 
-        ENCRYPT_4: begin
-            if(num_rounds == 4)
-                algo_next_state = ENCRYPT_DONE;
-            //encryption logic
-        end
+			//encryption logic
+		end
+		ENCRYPT_4: begin
+			algo_next_state = (num_rounds == 4) ? ENCRYPT_DONE : ENCRYPT_5;
 
-        ENCRYPT_5: begin
-            if(num_rounds == 5)
-                algo_next_state = ENCRYPT_DONE;
-            //encryption logic
-        end
+			//encryption logic
+		end
+		ENCRYPT_5: begin
+			algo_next_state = (num_rounds == 5) ? ENCRYPT_DONE : ENCRYPT_6;
 
-        ENCRYPT_6: begin
-            if(num_rounds == 6)
-                algo_next_state = ENCRYPT_DONE;
-            //encryption logic
-        end
+			//encryption logic
+		end
+		ENCRYPT_6: begin
+			algo_next_state = (num_rounds == 6) ? ENCRYPT_DONE : ENCRYPT_7;
 
-        ENCRYPT_7: begin
-            if(num_rounds == 7)
-                algo_next_state = ENCRYPT_DONE;
-            //encryption logic
-        end
+			//encryption logic
+		end
+		ENCRYPT_7: begin
+			algo_next_state = (num_rounds == 7) ? ENCRYPT_DONE : ENCRYPT_8;
 
-        ENCRYPT_8: begin
-            if(num_rounds == 8)
-                algo_next_state = ENCRYPT_DONE;
-            //encryption logic
-        end
+			//encryption logic
+		end
+		ENCRYPT_8: begin
+			algo_next_state = (num_rounds == 8) ? ENCRYPT_DONE : ENCRYPT_9;
 
-        ENCRYPT_9: begin
-            if(num_rounds == 9)
-                algo_next_state = ENCRYPT_DONE;
-            //encryption logic
-        end
+			//encryption logic
+		end
+		ENCRYPT_9: begin
+			algo_next_state = (num_rounds == 9) ? ENCRYPT_DONE : ENCRYPT_10;
 
-        ENCRYPT_10: begin
-            if(num_rounds == 10)
-                algo_next_state = ENCRYPT_DONE;
-            //encryption logic
-        end
+			//encryption logic
+		end
+		ENCRYPT_10: begin
+			algo_next_state = (num_rounds == 10) ? ENCRYPT_DONE : ENCRYPT_11;
 
-        ENCRYPT_11: begin
-            if(num_rounds == 11)
-                algo_next_state = ENCRYPT_DONE;
-            //encryption logic
-        end
+			//encryption logic
+		end
+		ENCRYPT_11: begin
+			algo_next_state = (num_rounds == 11) ? ENCRYPT_DONE : ENCRYPT_12;
 
-        ENCRYPT_12: begin
-            if(num_rounds == 12)
-                algo_next_state = ENCRYPT_DONE;
-            //encryption logic
-        end
+			//encryption logic
+		end
+		ENCRYPT_12: begin
+			algo_next_state = (num_rounds == 12) ? ENCRYPT_DONE : ENCRYPT_13;
 
-        ENCRYPT_13: begin
-            if(num_rounds == 13)
-                algo_next_state = ENCRYPT_DONE;
-            //encryption logic
-        end
+			//encryption logic
+		end
+		ENCRYPT_13: begin
+			algo_next_state = (num_rounds == 13) ? ENCRYPT_DONE : ENCRYPT_14;
 
-        ENCRYPT_14: begin
-            if(num_rounds == 14)
-                algo_next_state = ENCRYPT_DONE;
-            //encryption logic
-        end
+			//encryption logic
+		end
+		ENCRYPT_14: begin
+			algo_next_state = (num_rounds == 14) ? ENCRYPT_DONE : ENCRYPT_15;
 
-        ENCRYPT_15: begin
-            if(num_rounds == 15)
-                algo_next_state = ENCRYPT_DONE;
-            //encryption logic
-        end
+			//encryption logic
+		end
+		ENCRYPT_15: begin
+			algo_next_state = (num_rounds == 15) ? ENCRYPT_DONE : ENCRYPT_16;
+
+			//encryption logic
+		end
 
         ENCRYPT_16: begin
             algo_next_state = ENCRYPT_DONE;
@@ -200,96 +187,81 @@ always_comb begin
 
 
         //DECRYPTION LOGIC
+		DECRYPT_1: begin
+			algo_next_state = (num_rounds == 1) ? DECRYPT_DONE : DECRYPT_2;
 
-        DECRYPT_1: begin
-            if(num_rounds == 1)
-                algo_next_state = DECRYPT_DONE;
-            //decryption logic
-        end
+			//decryption logic
+		end
+		DECRYPT_2: begin
+			algo_next_state = (num_rounds == 2) ? DECRYPT_DONE : DECRYPT_3;
 
-        DECRYPT_2: begin
-            if(num_rounds == 2)
-                algo_next_state = DECRYPT_DONE;
-            //decryption logic
-        end
+			//decryption logic
+		end
+		DECRYPT_3: begin
+			algo_next_state = (num_rounds == 3) ? DECRYPT_DONE : DECRYPT_4;
 
-        DECRYPT_3: begin
-            if(num_rounds == 3)
-                algo_next_state = DECRYPT_DONE;
-            //decryption logic
-        end
+			//decryption logic
+		end
+		DECRYPT_4: begin
+			algo_next_state = (num_rounds == 4) ? DECRYPT_DONE : DECRYPT_5;
 
-        DECRYPT_4: begin
-            if(num_rounds == 4)
-                algo_next_state = DECRYPT_DONE;
-            //decryption logic
-        end
+			//decryption logic
+		end
+		DECRYPT_5: begin
+			algo_next_state = (num_rounds == 5) ? DECRYPT_DONE : DECRYPT_6;
 
-        DECRYPT_5: begin
-            if(num_rounds == 5)
-                algo_next_state = DECRYPT_DONE;
-            //decryption logic
-        end
+			//decryption logic
+		end
+		DECRYPT_6: begin
+			algo_next_state = (num_rounds == 6) ? DECRYPT_DONE : DECRYPT_7;
 
-        DECRYPT_6: begin
-            if(num_rounds == 6)
-                algo_next_state = DECRYPT_DONE;
-            //decryption logic
-        end
+			//decryption logic
+		end
+		DECRYPT_7: begin
+			algo_next_state = (num_rounds == 7) ? DECRYPT_DONE : DECRYPT_8;
 
-        DECRYPT_7: begin
-            if(num_rounds == 7)
-                algo_next_state = DECRYPT_DONE;
-            //decryption logic
-        end
+			//decryption logic
+		end
+		DECRYPT_8: begin
+			algo_next_state = (num_rounds == 8) ? DECRYPT_DONE : DECRYPT_9;
 
-        DECRYPT_8: begin
-            if(num_rounds == 8)
-                algo_next_state = DECRYPT_DONE;
-           //decryption logic
-        end
+			//decryption logic
+		end
+		DECRYPT_9: begin
+			algo_next_state = (num_rounds == 9) ? DECRYPT_DONE : DECRYPT_10;
 
-        DECRYPT_9: begin
-            if(num_rounds == 9)
-                algo_next_state = DECRYPT_DONE;
-            //decryption logic
-        end
+			//decryption logic
+		end
+		DECRYPT_10: begin
+			algo_next_state = (num_rounds == 10) ? DECRYPT_DONE : DECRYPT_11;
 
-        DECRYPT_10: begin
-            if(num_rounds == 10)
-                algo_next_state = DECRYPT_DONE;
-            //decryption logic
-        end
+			//decryption logic
+		end
+		DECRYPT_11: begin
+			algo_next_state = (num_rounds == 11) ? DECRYPT_DONE : DECRYPT_12;
 
-        DECRYPT_11: begin
-            if(num_rounds == 11)
-                algo_next_state = DECRYPT_DONE;
-            //decryption logic
-        end
+			//decryption logic
+		end
+		DECRYPT_12: begin
+			algo_next_state = (num_rounds == 12) ? DECRYPT_DONE : DECRYPT_13;
 
-        DECRYPT_12: begin
-            if(num_rounds == 12)
-                algo_next_state = DECRYPT_DONE;
-            //decryption logic
-        end
+			//decryption logic
+		end
+		DECRYPT_13: begin
+			algo_next_state = (num_rounds == 13) ? DECRYPT_DONE : DECRYPT_14;
 
-        DECRYPT_13: begin
-            if(num_rounds == 13)
-                algo_next_state = DECRYPT_DONE;
-           //decryption logic
-        end
+			//decryption logic
+		end
+		DECRYPT_14: begin
+			algo_next_state = (num_rounds == 14) ? DECRYPT_DONE : DECRYPT_15;
 
-        DECRYPT_14: begin
-            if(num_rounds == 14)
-                algo_next_state = DECRYPT_DONE;
-            //decryption logic
-        end
+			//decryption logic
+		end
+		DECRYPT_15: begin
+			algo_next_state = (num_rounds == 15) ? DECRYPT_DONE : DECRYPT_16;
 
-        DECRYPT_15: begin
-            if(num_rounds == 15)
-                algo_next_state = DECRYPT_DONE;
-            //decryption logic
-        end
+			//decryption logic
+		end
 
         DECRYPT_16: begin
             algo_next_state = DECRYPT_DONE;

@@ -13,7 +13,7 @@ logic [31:0] d_out;
 logic done;
 
 
-algo algo(
+algo Algo(
     .clk(clk),
     .rst(rst),
     .encrypt(encrypt),
@@ -25,11 +25,16 @@ algo algo(
     .done(done)
 );
 
+default clocking ckb @(posedge clk);
+    input d_out, done;
+    output rst, encrypt, decrypt, num_rounds, key, d_in;
+endclocking
+
 
 always begin
-    clk = 0;
+    clk <= 0;
     #1;
-    clk = 1;
+    clk <= 1;
     #1;
 end
 
@@ -37,22 +42,31 @@ end
 initial begin
     $fsdbDumpfile("dump.fsdb");
 	$fsdbDumpvars(0, "+all");
-    rst = 1;
-    encrypt = 0;
-    decrypt = 0;
-    num_rounds = 0;
-    key = 0;
-    d_in = 0;
+    rst <= 1;
+    encrypt <= 0;
+    decrypt <= 0;
+    num_rounds <= 16;
+    key <= 0;
+    d_in <= 0;
 
-    #10;
+    ##1;
 
-    rst = 0;
+    rst <= 0;
 
-    #10;
+    ##1;
 
-    rst = 1;
+    rst <= 1;
 
-    #10;
+    ##1;
+
+    encrypt <= 1'b1;
+     
+    ##1;
+
+    while(done != 1'b1) begin
+        $display("%b", Algo.algo_state);
+        ##1;
+    end
 
     $finish;
 

@@ -7,11 +7,6 @@ module rotl
     output logic[`W-1:0] data_o   // Rotated output
 );
 
-// logic [`W-1:0] n
-// assign n = n_i % 16'd16;
-
-assign data_o = ((data_i << n_i) | (data_i >> (`W-n_i)));
-// assign data_o = (data_i << n_i);
-// assign data_o = (data_i >> (`W-n_i));
+assign data_o = ((data_i << n_i) | (data_i >> (`W-(n_i % 16'd16))));
 
 endmodule : rotl

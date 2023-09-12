@@ -28,6 +28,9 @@ initial begin
 
     data = 16'b1000000000000001;
     n_shifts = 16'h0001;
+
+    #2;
+
     assert(shifted == 16'b00000000000000011)
         else begin
             $error("Bad Shift: 0x%x << 0x%x: 0x%x", data, n_shifts, shifted);
