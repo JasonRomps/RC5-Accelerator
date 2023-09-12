@@ -1,1 +1,4 @@
 Makefile
+sim/
+
+.vscode/
