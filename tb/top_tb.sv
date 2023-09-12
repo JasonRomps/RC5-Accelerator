@@ -12,6 +12,8 @@ logic [31:0] d_in;
 logic [31:0] d_out;
 logic done;
 
+logic [31:0] temp_data;
+
 
 algo Algo(
     .clk(clk),
@@ -61,19 +63,24 @@ initial begin
     d_in <= 32'hecebeceb;
     encrypt <= 1'b1;
     ##1;
+    $display("Initial Value: %x", d_in);
     encrypt <= 1'b0;
     while(done != 1'b1) begin
         ##1;
-        $display("%x", d_out);
     end
+    $display("Encrypted Value: %x", d_out);
+    temp_data <= d_out;
+    ##1;
 
-    // // Ensure decrypt state machine works
-    // decrypt <= 1'b1;
-    // ##1;
-    // decrypt <= 1'b0;
-    // while(done != 1'b1) begin
-    //     ##1;
-    // end
+    // Ensure decrypt state machine works
+    d_in <= temp_data;
+    decrypt <= 1'b1;
+    ##1;
+    decrypt <= 1'b0;
+    while(done != 1'b1) begin
+        ##1;
+    end
+    $display("Decrypted Value: %x", d_out);
 
     $finish;
 
