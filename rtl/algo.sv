@@ -16,6 +16,7 @@ parameter IDLE = 6'b000000;
 parameter ENCRYPT_DONE = 6'b000001;
 parameter DECRYPT_DONE = 6'b000010;
 
+parameter ENCRYPT_INIT = 6'b000011;
 parameter ENCRYPT_1 = 6'b100000;
 parameter ENCRYPT_2 = 6'b100001;
 parameter ENCRYPT_3 = 6'b100010;
@@ -33,6 +34,7 @@ parameter ENCRYPT_14 = 6'b101101;
 parameter ENCRYPT_15 = 6'b101110;
 parameter ENCRYPT_16 = 6'b101111;
 
+parameter DECRYPT_INIT = 6'b000100;
 parameter DECRYPT_1 = 6'b110000;
 parameter DECRYPT_2 = 6'b110001;
 parameter DECRYPT_3 = 6'b110010;
@@ -54,15 +56,40 @@ parameter DECRYPT_16 = 6'b111111;
 
 //logic [4:0] round_counter;
 
+logic [15:0] A, B, new_A, new_B;
+logic [15:0] A_rot_out, B_rot_out;
 
+assign d_out = {B, A};
+
+logic [15:0] Subkeys [33:0];
+
+rotl A_Rotl(
+	.data_i(A^B),
+	.n_i(B),
+	.data_o(A_rot_out)
+);
+
+rotl B_Rotl(
+	.data_i(B^new_A),
+	.n_i(new_A),
+	.data_o(B_rot_out)
+);
 
 //TOP LEVEL STATE TRANSITION
 always_ff @ (posedge clk) begin
     if(~rst) begin
         algo_state <= IDLE;
+		A <= 16'd0;
+		B <= 16'd0;
+
+		for(int i = 0; i < 34; i++) begin
+			Subkeys[i] <= 0;
+		end
     end
     else begin
         algo_state <= algo_next_state;
+		A <= new_A;
+		B <= new_B;
     end
 end
 
@@ -85,13 +112,14 @@ always_comb begin
                 algo_next_state = DECRYPT_DONE;
             end
             else if(encrypt) begin
-                algo_next_state = ENCRYPT_1;
+                algo_next_state = ENCRYPT_INIT;
             end
             else if(decrypt)
-                algo_next_state = DECRYPT_1;
+                algo_next_state = DECRYPT_INIT;
+
+			new_A = A; // Hold Value in temp registers
+			new_B = B;
         end
-
-
 
         ENCRYPT_DONE: begin
             done = 1'b1;
@@ -101,92 +129,120 @@ always_comb begin
         DECRYPT_DONE: begin
             done = 1'b1;
             algo_next_state = IDLE;
-        
         end
 
+		ENCRYPT_INIT: begin
+			algo_next_state = ENCRYPT_1;
+			new_A = d_in[15:0] + S[0];
+			new_B = d_in[31:16] + S[1];
+			//encryption logic
+		end
 		ENCRYPT_1: begin
 			algo_next_state = (num_rounds == 1) ? ENCRYPT_DONE : ENCRYPT_2;
-
+			new_A = A_rot_out + Subkeys[2 * 1]; // 1 Because of Round 1
+			new_B = B_rot_out + Subkeys[(2 * 1) + 1];
 			//encryption logic
 		end
 		ENCRYPT_2: begin
 			algo_next_state = (num_rounds == 2) ? ENCRYPT_DONE : ENCRYPT_3;
-
+			new_A = A_rot_out + Subkeys[2 * 2]; // 2 Because of Round 2
+			new_B = B_rot_out + Subkeys[(2 * 2) + 1];
 			//encryption logic
 		end
 		ENCRYPT_3: begin
 			algo_next_state = (num_rounds == 3) ? ENCRYPT_DONE : ENCRYPT_4;
-
+			new_A = A_rot_out + Subkeys[2 * 3]; // 3 Because of Round 3
+			new_B = B_rot_out + Subkeys[(2 * 3) + 1];
 			//encryption logic
 		end
 		ENCRYPT_4: begin
 			algo_next_state = (num_rounds == 4) ? ENCRYPT_DONE : ENCRYPT_5;
-
+			new_A = A_rot_out + Subkeys[2 * 4]; // 4 Because of Round 4
+			new_B = B_rot_out + Subkeys[(2 * 4) + 1];
 			//encryption logic
 		end
 		ENCRYPT_5: begin
 			algo_next_state = (num_rounds == 5) ? ENCRYPT_DONE : ENCRYPT_6;
-
+			new_A = A_rot_out + Subkeys[2 * 5]; // 5 Because of Round 5
+			new_B = B_rot_out + Subkeys[(2 * 5) + 1];
 			//encryption logic
 		end
 		ENCRYPT_6: begin
 			algo_next_state = (num_rounds == 6) ? ENCRYPT_DONE : ENCRYPT_7;
-
+			new_A = A_rot_out + Subkeys[2 * 6]; // 6 Because of Round 6
+			new_B = B_rot_out + Subkeys[(2 * 6) + 1];
 			//encryption logic
 		end
 		ENCRYPT_7: begin
 			algo_next_state = (num_rounds == 7) ? ENCRYPT_DONE : ENCRYPT_8;
-
+			new_A = A_rot_out + Subkeys[2 * 7]; // 7 Because of Round 7
+			new_B = B_rot_out + Subkeys[(2 * 7) + 1];
 			//encryption logic
 		end
 		ENCRYPT_8: begin
 			algo_next_state = (num_rounds == 8) ? ENCRYPT_DONE : ENCRYPT_9;
-
+			new_A = A_rot_out + Subkeys[2 * 8]; // 8 Because of Round 8
+			new_B = B_rot_out + Subkeys[(2 * 8) + 1];
 			//encryption logic
 		end
 		ENCRYPT_9: begin
 			algo_next_state = (num_rounds == 9) ? ENCRYPT_DONE : ENCRYPT_10;
-
+			new_A = A_rot_out + Subkeys[2 * 9]; // 9 Because of Round 9
+			new_B = B_rot_out + Subkeys[(2 * 9) + 1];
 			//encryption logic
 		end
 		ENCRYPT_10: begin
 			algo_next_state = (num_rounds == 10) ? ENCRYPT_DONE : ENCRYPT_11;
-
+			new_A = A_rot_out + Subkeys[2 * 10]; // 10 Because of Round 10
+			new_B = B_rot_out + Subkeys[(2 * 10) + 1];
 			//encryption logic
 		end
 		ENCRYPT_11: begin
 			algo_next_state = (num_rounds == 11) ? ENCRYPT_DONE : ENCRYPT_12;
-
+			new_A = A_rot_out + Subkeys[2 * 11]; // 11 Because of Round 11
+			new_B = B_rot_out + Subkeys[(2 * 11) + 1];
 			//encryption logic
 		end
 		ENCRYPT_12: begin
 			algo_next_state = (num_rounds == 12) ? ENCRYPT_DONE : ENCRYPT_13;
-
+			new_A = A_rot_out + Subkeys[2 * 12]; // 12 Because of Round 12
+			new_B = B_rot_out + Subkeys[(2 * 12) + 1];
 			//encryption logic
 		end
 		ENCRYPT_13: begin
 			algo_next_state = (num_rounds == 13) ? ENCRYPT_DONE : ENCRYPT_14;
-
+			new_A = A_rot_out + Subkeys[2 * 13]; // 13 Because of Round 13
+			new_B = B_rot_out + Subkeys[(2 * 13) + 1];
 			//encryption logic
 		end
 		ENCRYPT_14: begin
 			algo_next_state = (num_rounds == 14) ? ENCRYPT_DONE : ENCRYPT_15;
-
+			new_A = A_rot_out + Subkeys[2 * 14]; // 14 Because of Round 14
+			new_B = B_rot_out + Subkeys[(2 * 14) + 1];
 			//encryption logic
 		end
 		ENCRYPT_15: begin
 			algo_next_state = (num_rounds == 15) ? ENCRYPT_DONE : ENCRYPT_16;
-
+			new_A = A_rot_out + Subkeys[2 * 15]; // 11 Because of Round 15
+			new_B = B_rot_out + Subkeys[(2 * 15) + 1];
 			//encryption logic
 		end
 
         ENCRYPT_16: begin
             algo_next_state = ENCRYPT_DONE;
+			new_A = A_rot_out + Subkeys[2 * 16]; // 16 Because of Round 16
+			new_B = B_rot_out + Subkeys[(2 * 16) + 1];
             //encryption logic
         end
 
 
         //DECRYPTION LOGIC
+		DECRYPT_INIT: begin
+			algo_next_state = DECRYPT_1;
+			new_A = d_in[15:0];
+			new_B = d_in[31:16];
+			//encryption logic
+		end
 		DECRYPT_1: begin
 			algo_next_state = (num_rounds == 1) ? DECRYPT_DONE : DECRYPT_2;
 
