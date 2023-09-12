@@ -12,9 +12,9 @@ rotl ROTL(
 
 
 always begin
-    clk = 0;
+    clk = 1'b0;
     #1;
-    clk = 1;
+    clk = 1'b1;
     #1;
 end
 
@@ -22,19 +22,19 @@ end
 initial begin
     $fsdbDumpfile("dump.fsdb");
 	$fsdbDumpvars(0, "+all");
-    data = 0;
+    data = 16'b0;
 
-    ##1;
+    #2;
 
-    data = 16'b0101010101010101;
+    data = 16'b1000000000000001;
     n_shifts = 16'h0001;
-    assert(shifted == 16'b1010101010101010)
+    assert(shifted == 16'b00000000000000011)
         else begin
-            $error("Bad Shift: %0x << %0x: %0x", data, n_shifts, shifted);
+            $error("Bad Shift: 0x%x << 0x%x: 0x%x", data, n_shifts, shifted);
             $finish;
         end
 
-    ##1;
+    #2;
 
     $finish;
 
