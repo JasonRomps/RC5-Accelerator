@@ -38,6 +38,12 @@ always begin
     #1;
 end
 
+task reset();
+    rst <= 0;
+    ##1;
+    rst <= 1;
+    ##1;
+endtask
 
 initial begin
     $fsdbDumpfile("dump.fsdb");
@@ -49,22 +55,21 @@ initial begin
     key <= 0;
     d_in <= 0;
 
-    ##1;
+    reset();
 
-    rst <= 0;
-
-    ##1;
-
-    rst <= 1;
-
-    ##1;
-
+    // Ensure encrypt state machine works
     encrypt <= 1'b1;
-     
     ##1;
-
+    encrypt <= 1'b0;
     while(done != 1'b1) begin
-        $display("%b", Algo.algo_state);
+        ##1;
+    end
+
+    // Ensure decrypt state machine works
+    decrypt <= 1'b1;
+    ##1;
+    decrypt <= 1'b0;
+    while(done != 1'b1) begin
         ##1;
     end
 
