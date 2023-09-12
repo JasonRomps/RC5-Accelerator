@@ -62,6 +62,8 @@ task do_encrypt(input logic [31:0] data_i);
     ##1;
     encrypt <= 1'b0;
     while(done != 1'b1) begin
+        // $display("A:(%x), B:(%x)", Algo.A, Algo.B);
+        // $display("%x", Algo.A_rot_out_dec);
         ##1;
     end
     temp_data <= d_out;
@@ -88,10 +90,10 @@ function check_encryption(input logic [31:0] data_i);
         end
 endfunction
 
-
 initial begin
     $fsdbDumpfile("dump.fsdb");
 	$fsdbDumpvars(0, "+all");
+
     set_defaults();
     reset();
 

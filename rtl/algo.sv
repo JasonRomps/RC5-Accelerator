@@ -55,7 +55,7 @@ parameter DECRYPT_16 = 6'b111111;
 
 logic [15:0] A, B, new_A, new_B;
 logic [15:0] A_rot_out_enc, B_rot_out_enc, A_rot_out_dec, B_rot_out_dec;
-logic [15:0] Subkeys [33:0];
+logic [15:0] Subkeys [0:33];
 logic [15:0] dec_a_s_val, dec_b_s_val;
 
 bit enc_active, dec_active;
