@@ -58,9 +58,6 @@ parameter DECRYPT_16 = 6'b111111;
 
 logic [15:0] A, B, new_A, new_B;
 logic [15:0] A_rot_out, B_rot_out;
-
-assign d_out = {B, A};
-
 logic [15:0] Subkeys [33:0];
 
 rotl A_Rotl(
@@ -98,6 +95,7 @@ always_comb begin
 
     // Defaults
     done = 1'b0;
+	d_out = 32'd0;
 
     case(algo_state)
 
@@ -123,12 +121,14 @@ always_comb begin
 
         ENCRYPT_DONE: begin
             done = 1'b1;
-            algo_next_state = IDLE; 
+            algo_next_state = IDLE;
+			d_out = {B, A};
         end
 
         DECRYPT_DONE: begin
             done = 1'b1;
             algo_next_state = IDLE;
+			d_out = {B - Subkeys[1], A - Subkeys[0]};
         end
 
 		ENCRYPT_INIT: begin
