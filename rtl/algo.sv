@@ -16,7 +16,6 @@ parameter IDLE = 6'b000000;
 parameter ENCRYPT_DONE = 6'b000001;
 parameter DECRYPT_DONE = 6'b000010;
 
-parameter ENCRYPT_INIT = 6'b000011;
 parameter ENCRYPT_1 = 6'b100000;
 parameter ENCRYPT_2 = 6'b100001;
 parameter ENCRYPT_3 = 6'b100010;
@@ -34,7 +33,6 @@ parameter ENCRYPT_14 = 6'b101101;
 parameter ENCRYPT_15 = 6'b101110;
 parameter ENCRYPT_16 = 6'b101111;
 
-parameter DECRYPT_INIT = 6'b000100;
 parameter DECRYPT_1 = 6'b110000;
 parameter DECRYPT_2 = 6'b110001;
 parameter DECRYPT_3 = 6'b110010;
@@ -59,8 +57,8 @@ logic [15:0] Subkeys [0:33];
 logic [15:0] dec_a_s_val, dec_b_s_val;
 
 bit enc_active, dec_active;
-assign enc_active = (algo_state == ENCRYPT_INIT) || (~algo_state[4]);
-assign dec_active = (algo_state == DECRYPT_INIT) || (algo_state[4]);
+assign enc_active = (~algo_state[4]);
+assign dec_active = (algo_state[4]);
 
 assign Subkeys = {16'd55048, 16'd43744, 16'd48559, 16'd27403, 16'd20374, 16'd33387, 16'd2062, 16'd61013, 16'd49237, 16'd33709, 16'd16278, 16'd65452, 16'd9968, 16'd4572, 16'd34933, 16'd35205, 16'd37470, 16'd42119, 16'd21025, 16'd13567, 16'd19718, 16'd1446, 16'd11664, 16'd40137, 16'd19576, 16'd15720, 16'd15720,16'd15720,16'd15720,16'd15720,16'd15720,16'd15720,16'd15720,16'd15720};
 
@@ -121,6 +119,8 @@ always_comb begin
     case(algo_state)
 
         IDLE: begin
+			new_A = A; // Hold Value in temp registers
+			new_B = B;
             if(rst == 0) begin
                 algo_next_state = IDLE;
             end
@@ -131,13 +131,15 @@ always_comb begin
                 algo_next_state = DECRYPT_DONE;
             end
             else if(encrypt) begin
-                algo_next_state = ENCRYPT_INIT;
+                algo_next_state = ENCRYPT_1;
+				new_A = d_in[15:0] + Subkeys[0];
+				new_B = d_in[31:16] + Subkeys[1];
             end
-            else if(decrypt)
-                algo_next_state = DECRYPT_INIT;
-
-			new_A = A; // Hold Value in temp registers
-			new_B = B;
+            else if(decrypt) begin
+					algo_next_state = DECRYPT_1;
+					new_A = d_in[15:0];
+					new_B = d_in[31:16];
+				end
         end
 
         ENCRYPT_DONE: begin
@@ -152,12 +154,6 @@ always_comb begin
 			d_out = {B - Subkeys[1], A - Subkeys[0]};
         end
 
-		ENCRYPT_INIT: begin
-			algo_next_state = ENCRYPT_1;
-			new_A = d_in[15:0] + Subkeys[0];
-			new_B = d_in[31:16] + Subkeys[1];
-			//encryption logic
-		end
 		ENCRYPT_1: begin
 			algo_next_state = (num_rounds == 1) ? ENCRYPT_DONE : ENCRYPT_2;
 			new_A = A_rot_out_enc + Subkeys[2 * 1]; // 1 Because of Round 1
@@ -256,14 +252,6 @@ always_comb begin
             //encryption logic
         end
 
-
-        //DECRYPTION LOGIC
-		DECRYPT_INIT: begin
-			algo_next_state = DECRYPT_1;
-			new_A = d_in[15:0];
-			new_B = d_in[31:16];
-			//encryption logic
-		end
 		DECRYPT_1: begin
 			algo_next_state = (num_rounds == 1) ? DECRYPT_DONE : DECRYPT_2;
 			dec_b_s_val = Subkeys[(2*12)+1];
