@@ -1,4 +1,7 @@
 `timescale 1ns / 1ps
+
+`define MULTI_ROUND
+
 module top_tb;
 
 
@@ -95,12 +98,19 @@ initial begin
     set_defaults();
     reset();
 
-    // Ensure encrypt state machine works
-    for(int i = 0; i < 100000; i++) begin
+    `ifdef MULTI_ROUND
+    for(int j = 1; j < 16; j++) begin
+    num_rounds <= j[4:0];
+    ##1;
+    `endif
+    for(int i = 0; i < 1000; i++) begin
         do_encrypt(i[31:0]*3413);
         do_decrypt(temp_data);
         check_encryption(i[31:0]*3413);
     end
+    `ifdef MULTI_ROUND
+    end
+    `endif
 
     $display("SUCCESS: TESTBENCH ENDED WITHOUT ERROR");
     $finish;
