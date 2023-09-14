@@ -64,6 +64,9 @@ assign dec_active = (algo_state == DECRYPT_INIT) || (algo_state[4]);
 
 assign Subkeys = {16'd55048, 16'd43744, 16'd48559, 16'd27403, 16'd20374, 16'd33387, 16'd2062, 16'd61013, 16'd49237, 16'd33709, 16'd16278, 16'd65452, 16'd9968, 16'd4572, 16'd34933, 16'd35205, 16'd37470, 16'd42119, 16'd21025, 16'd13567, 16'd19718, 16'd1446, 16'd11664, 16'd40137, 16'd19576, 16'd15720, 16'd15720,16'd15720,16'd15720,16'd15720,16'd15720,16'd15720,16'd15720,16'd15720};
 
+logic [15:0] axorb;
+assign axorb = A^B;
+
 rotl A_Rotl(
 	.data_i(A^B),
 	.n_i(B),
@@ -263,8 +266,8 @@ always_comb begin
 		end
 		DECRYPT_1: begin
 			algo_next_state = (num_rounds == 1) ? DECRYPT_DONE : DECRYPT_2;
-			dec_b_s_val = Subkeys[(2*1)+1];
-			dec_a_s_val = Subkeys[(2*1)];
+			dec_b_s_val = Subkeys[(2*12)+1];
+			dec_a_s_val = Subkeys[(2*12)];
 			
 			new_B = B_rot_out_dec ^ A;
 			new_A = A_rot_out_dec ^ new_B;
@@ -272,87 +275,6 @@ always_comb begin
 		end
 		DECRYPT_2: begin
 			algo_next_state = (num_rounds == 2) ? DECRYPT_DONE : DECRYPT_3;
-			dec_b_s_val = Subkeys[(2*2)+1];
-			dec_a_s_val = Subkeys[(2*2)];
-
-			new_B = B_rot_out_dec ^ A;
-			new_A = A_rot_out_dec ^ new_B;
-			//decryption logic
-		end
-		DECRYPT_3: begin
-			algo_next_state = (num_rounds == 3) ? DECRYPT_DONE : DECRYPT_4;
-			dec_b_s_val = Subkeys[(2*3)+1];
-			dec_a_s_val = Subkeys[(2*3)];
-
-			new_B = B_rot_out_dec ^ A;
-			new_A = A_rot_out_dec ^ new_B;
-			//decryption logic
-		end
-		DECRYPT_4: begin
-			algo_next_state = (num_rounds == 4) ? DECRYPT_DONE : DECRYPT_5;
-			dec_b_s_val = Subkeys[(2*4)+1];
-			dec_a_s_val = Subkeys[(2*4)];
-
-			new_B = B_rot_out_dec ^ A;
-			new_A = A_rot_out_dec ^ new_B;
-			//decryption logic
-		end
-		DECRYPT_5: begin
-			algo_next_state = (num_rounds == 5) ? DECRYPT_DONE : DECRYPT_6;
-			dec_b_s_val = Subkeys[(2*5)+1];
-			dec_a_s_val = Subkeys[(2*5)];
-
-			new_B = B_rot_out_dec ^ A;
-			new_A = A_rot_out_dec ^ new_B;
-			//decryption logic
-		end
-		DECRYPT_6: begin
-			algo_next_state = (num_rounds == 6) ? DECRYPT_DONE : DECRYPT_7;
-			dec_b_s_val = Subkeys[(2*6)+1];
-			dec_a_s_val = Subkeys[(2*6)];
-
-			new_B = B_rot_out_dec ^ A;
-			new_A = A_rot_out_dec ^ new_B;
-			//decryption logic
-		end
-		DECRYPT_7: begin
-			algo_next_state = (num_rounds == 7) ? DECRYPT_DONE : DECRYPT_8;
-			dec_b_s_val = Subkeys[(2*7)+1];
-			dec_a_s_val = Subkeys[(2*7)];
-
-			new_B = B_rot_out_dec ^ A;
-			new_A = A_rot_out_dec ^ new_B;
-			//decryption logic
-		end
-		DECRYPT_8: begin
-			algo_next_state = (num_rounds == 8) ? DECRYPT_DONE : DECRYPT_9;
-			dec_b_s_val = Subkeys[(2*8)+1];
-			dec_a_s_val = Subkeys[(2*8)];
-
-			new_B = B_rot_out_dec ^ A;
-			new_A = A_rot_out_dec ^ new_B;
-			//decryption logic
-		end
-		DECRYPT_9: begin
-			algo_next_state = (num_rounds == 9) ? DECRYPT_DONE : DECRYPT_10;
-			dec_b_s_val = Subkeys[(2*9)+1];
-			dec_a_s_val = Subkeys[(2*9)];
-
-			new_B = B_rot_out_dec ^ A;
-			new_A = A_rot_out_dec ^ new_B;
-			//decryption logic
-		end
-		DECRYPT_10: begin
-			algo_next_state = (num_rounds == 10) ? DECRYPT_DONE : DECRYPT_11;
-			dec_b_s_val = Subkeys[(2*10)+1];
-			dec_a_s_val = Subkeys[(2*10)];
-
-			new_B = B_rot_out_dec ^ A;
-			new_A = A_rot_out_dec ^ new_B;
-			//decryption logic
-		end
-		DECRYPT_11: begin
-			algo_next_state = (num_rounds == 11) ? DECRYPT_DONE : DECRYPT_12;
 			dec_b_s_val = Subkeys[(2*11)+1];
 			dec_a_s_val = Subkeys[(2*11)];
 
@@ -360,10 +282,91 @@ always_comb begin
 			new_A = A_rot_out_dec ^ new_B;
 			//decryption logic
 		end
+		DECRYPT_3: begin
+			algo_next_state = (num_rounds == 3) ? DECRYPT_DONE : DECRYPT_4;
+			dec_b_s_val = Subkeys[(2*10)+1];
+			dec_a_s_val = Subkeys[(2*10)];
+
+			new_B = B_rot_out_dec ^ A;
+			new_A = A_rot_out_dec ^ new_B;
+			//decryption logic
+		end
+		DECRYPT_4: begin
+			algo_next_state = (num_rounds == 4) ? DECRYPT_DONE : DECRYPT_5;
+			dec_b_s_val = Subkeys[(2*9)+1];
+			dec_a_s_val = Subkeys[(2*9)];
+
+			new_B = B_rot_out_dec ^ A;
+			new_A = A_rot_out_dec ^ new_B;
+			//decryption logic
+		end
+		DECRYPT_5: begin
+			algo_next_state = (num_rounds == 5) ? DECRYPT_DONE : DECRYPT_6;
+			dec_b_s_val = Subkeys[(2*8)+1];
+			dec_a_s_val = Subkeys[(2*8)];
+
+			new_B = B_rot_out_dec ^ A;
+			new_A = A_rot_out_dec ^ new_B;
+			//decryption logic
+		end
+		DECRYPT_6: begin
+			algo_next_state = (num_rounds == 6) ? DECRYPT_DONE : DECRYPT_7;
+			dec_b_s_val = Subkeys[(2*7)+1];
+			dec_a_s_val = Subkeys[(2*7)];
+
+			new_B = B_rot_out_dec ^ A;
+			new_A = A_rot_out_dec ^ new_B;
+			//decryption logic
+		end
+		DECRYPT_7: begin
+			algo_next_state = (num_rounds == 7) ? DECRYPT_DONE : DECRYPT_8;
+			dec_b_s_val = Subkeys[(2*6)+1];
+			dec_a_s_val = Subkeys[(2*6)];
+
+			new_B = B_rot_out_dec ^ A;
+			new_A = A_rot_out_dec ^ new_B;
+			//decryption logic
+		end
+		DECRYPT_8: begin
+			algo_next_state = (num_rounds == 8) ? DECRYPT_DONE : DECRYPT_9;
+			dec_b_s_val = Subkeys[(2*5)+1];
+			dec_a_s_val = Subkeys[(2*5)];
+
+			new_B = B_rot_out_dec ^ A;
+			new_A = A_rot_out_dec ^ new_B;
+			//decryption logic
+		end
+		DECRYPT_9: begin
+			algo_next_state = (num_rounds == 9) ? DECRYPT_DONE : DECRYPT_10;
+			dec_b_s_val = Subkeys[(2*4)+1];
+			dec_a_s_val = Subkeys[(2*4)];
+
+			new_B = B_rot_out_dec ^ A;
+			new_A = A_rot_out_dec ^ new_B;
+			//decryption logic
+		end
+		DECRYPT_10: begin
+			algo_next_state = (num_rounds == 10) ? DECRYPT_DONE : DECRYPT_11;
+			dec_b_s_val = Subkeys[(2*3)+1];
+			dec_a_s_val = Subkeys[(2*3)];
+
+			new_B = B_rot_out_dec ^ A;
+			new_A = A_rot_out_dec ^ new_B;
+			//decryption logic
+		end
+		DECRYPT_11: begin
+			algo_next_state = (num_rounds == 11) ? DECRYPT_DONE : DECRYPT_12;
+			dec_b_s_val = Subkeys[(2*2)+1];
+			dec_a_s_val = Subkeys[(2*2)];
+
+			new_B = B_rot_out_dec ^ A;
+			new_A = A_rot_out_dec ^ new_B;
+			//decryption logic
+		end
 		DECRYPT_12: begin
 			algo_next_state = (num_rounds == 12) ? DECRYPT_DONE : DECRYPT_13;
-			dec_b_s_val = Subkeys[(2*12)+1];
-			dec_a_s_val = Subkeys[(2*12)];
+			dec_b_s_val = Subkeys[(2*1)+1];
+			dec_a_s_val = Subkeys[(2*1)];
 
 			new_B = B_rot_out_dec ^ A;
 			new_A = A_rot_out_dec ^ new_B;
