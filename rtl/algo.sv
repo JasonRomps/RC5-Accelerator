@@ -83,6 +83,11 @@ rotr A_Rotr(
 	.data_o(A_rot_out_dec)
 );
 
+keygen key_gen(
+	.key(key),
+	.sub(Subkeys)
+)
+
 //TOP LEVEL STATE TRANSITION
 always_ff @ (posedge clk) begin
     if(~rst) begin
