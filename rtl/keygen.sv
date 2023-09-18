@@ -1,7 +1,7 @@
 `define W_size 16 // word size (PARAMETER)
 `define K_size 128 // Key size (PARAMETER)
 `define U 2 // W_size/2
-`define T 34 // 2*(number of rounds + 1)
+`define T 26 // 2*(number of rounds + 1)
 `define B 16 // key size in bytes
 `define C 8 // c=b/u=16/2=8
 `define P 0xb7e1
@@ -13,11 +13,11 @@ module keygen
     input logic clk,
     input logic rst,
     input logic[`K_size-1:0] key,
-    output logic[`W_size-1:0] sub [T],
+    output logic[`W_size-1:0] sub [`T],
     output logic ready
 );
-logic [`W_size-1:0] S [T];
-logic [`W_size-1:0] L [C];
+logic [`W_size-1:0] S [`T];
+logic [`W_size-1:0] L [`C];
 
 // States
 logic [2:0] state, next_state;
