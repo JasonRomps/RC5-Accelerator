@@ -58,10 +58,10 @@ void rc5::subkey_init(rc5::key_t K, rc5::word_t S[T]){
 
     A = B = j = k = 0;
     for (i = 0; k < 3*T; k++){
-        A = S[i] = rc5::rotl(S[i]+(A+B),3);
-        B = L[j] = rc5::rotl(L[j]+(A+B),(A+B));
+        A = S[i] = rc5::rotl(S[i]+(A+B),3); // A <= A_new; s[i] <= A_new;
+        B = L[j] = rc5::rotl(L[j]+(A+B),(A+B)); // B <= B_new; L[j] <= B_new; ***NOTE: USE A_new***
 
-        i=(i+1) % T;
-        j=(j+1) % C;
+        i=(i+1) % T; // i <= i_new;
+        j=(j+1) % C; // i <= i_new;
     }
 }

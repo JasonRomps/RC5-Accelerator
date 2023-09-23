@@ -1,9 +1,14 @@
-`define K_size 128 // Key size (PARAMETER)
 `define W_size 16 // word size (PARAMETER)
+`define K_size 128 // Key size (PARAMETER)
+`define U 2 // W_size/2
 `define T 26 // 2*(number of rounds + 1)
+`define B 16 // key size in bytes
+`define C 8 // c=b/u=16/2=8
+`define P 16'hb7e1
+`define Q 16'h9e37
 
 // COMMENT THIS DEFINE OUT FOR ALL 10,000 TEST CASES!!!!
-`define FULL
+// `define FULL
 
 `timescale 1ns / 1ps
 module key_tb;
@@ -11,9 +16,12 @@ module key_tb;
 logic start;
 logic clk;
 logic rst;
-logic[`K_size-1:0] key;
-logic[`W_size-1:0] sub [`T];
+logic [128:0] key;
+logic [`W_size-1:0] sub [0:`T-1];
+logic [4:0] num_rounds;
 logic ready;
+
+assign num_rounds = 12;
 
 keygen Keygen(.*);
 
@@ -36,7 +44,7 @@ task reset();
     ##1;
 endtask
 
-task test_expansion(logic[`K_size-1:0] test_key, logic [`W_size-1:0] test_subkey [`T]);
+task test_expansion(logic[`K_size-1:0] test_key, logic [`W_size-1:0] test_subkey [0:`T-1]);
     key <= test_key;
     start <= 1;
     ##1;
