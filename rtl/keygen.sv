@@ -48,6 +48,7 @@ rotl B_Rotl(
 );
 
 parameter IDLE = 3'b000;
+parameter INIT = 3'b101;
 parameter L_GEN_STATE = 3'b001;
 parameter S_GEN_STATE = 3'b010;
 parameter MIX_STAGE  = 3'b011;
@@ -78,6 +79,21 @@ always_ff @(posedge clk) begin
     end
     else begin
         case(state)
+            INIT: begin
+                s_counter <= 0;
+                l_over_counter <= 6'b001111;
+                mix_counter <= 0;
+                A <= 0;
+                B <= 0;
+                j <= 0;
+                i <= 0;
+                for(int i = 0; i < `C; i++) begin
+                    L[i] <= 0;
+                end
+                for(int i = 0; i < `T; i++) begin
+                    S[i] <= 0;
+                end
+            end
             L_GEN_STATE: begin
                 L[l_counter] <= (L[l_counter] << 8) + key_form[l_over_counter];
                 l_over_counter--;
@@ -113,7 +129,10 @@ always_comb begin
 
     case(state)
         IDLE: begin
-            next_state = (start == 1) ? L_GEN_STATE : IDLE;
+            next_state = (start == 1) ? INIT : IDLE;
+        end
+        INIT: begin
+            next_state = L_GEN_STATE;
         end
         L_GEN_STATE: begin
             next_state = (l_over_counter == 0) ? S_GEN_STATE : L_GEN_STATE;

@@ -9,7 +9,7 @@
 `define Q 16'h9e37
 
 // UNCOMMENT THIS DEFINE FOR ALL 10,000 TEST CASES!!!!
-// `define FULL
+`define FULL
 
 `timescale 1ns / 1ps
 module key_tb;
@@ -48,7 +48,7 @@ endtask
 task test_expansion(logic[`K_size-1:0] test_key, logic [`W_size-1:0] test_subkey [0:`T-1]);
     key <= test_key;
 
-    reset();
+    ##1;
 
     start <= 1;
     ##1;

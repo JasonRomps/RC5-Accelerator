@@ -52,6 +52,8 @@ endtask
 task test_expansion(logic[`K_size-1:0] test_key, logic [`W_size-1:0] test_subkey [0:`T-1]);
     key <= test_key;
 
+    ##1;
+
     reset();
 
     start <= 1;
