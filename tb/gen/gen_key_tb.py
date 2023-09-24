@@ -1,5 +1,6 @@
 import os
 from random import choice
+from tqdm import tqdm
 
 prefix = """
 `define W_size 16 // word size (PARAMETER)
@@ -127,7 +128,7 @@ if __name__ == "__main__":
 
     print(prefix)
 
-    for _ in range(1000):
+    for _ in tqdm(range(10000)):
         key = rand_hex(32)
         subkeys = gen_subkey(key)
         subkeys_formatted = "{" + "".join([f"16'd{sk}{', ' if idx != len(subkeys)-1 else ''}" for idx, sk in enumerate(subkeys)]) + "}"
