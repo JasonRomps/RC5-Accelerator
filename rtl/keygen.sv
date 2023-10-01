@@ -1,7 +1,7 @@
 `define W_size 16 // word size (PARAMETER)
 `define K_size 128 // Key size (PARAMETER)
 `define U 2 // W_size/2
-`define T 26 // 2*(number of rounds + 1)
+`define T 34 // 2*(number of rounds + 1)
 `define B 16 // key size in bytes
 `define C 8 // c=b/u=16/2=8
 `define P 16'hb7e1
@@ -13,8 +13,8 @@ module keygen
     input logic clk,
     input logic rst,
     input logic [4:0] num_rounds,
-    input logic [128:0] key,
-    output logic [`W_size-1:0] sub [0:`T-1],
+    input logic [127:0] key,
+    output logic [`W_size-1:0] subkeys [0:`T-1],
     output logic ready
 );
 logic [`W_size-1:0] S [0:`T-1];
@@ -29,7 +29,7 @@ logic [6:0] l_over_counter, mix_counter;
 logic [5:0] s_counter, l_counter; // Keep track of where we are in the L and S gen loops
 logic [6:0] T;
 
-assign T = (num_rounds + 1) << 2;
+assign T = (num_rounds + 1) << 1;
 
 assign l_counter = l_over_counter[6:1];
 
@@ -54,7 +54,7 @@ parameter S_GEN_STATE = 3'b010;
 parameter MIX_STAGE  = 3'b011;
 parameter DONE = 3'b100;
 
-assign sub = S;
+assign subkeys = S;
 
 // top level logic
 always_ff @(posedge clk) begin
@@ -141,8 +141,8 @@ always_comb begin
             next_state = (s_counter == T)  ? MIX_STAGE : S_GEN_STATE;
         end
         MIX_STAGE: begin
-            next_state = (mix_counter == ((3*`T)-1)) ? DONE : MIX_STAGE;
-            i_new = (i+1) % `T;
+            next_state = (mix_counter == ((3*T)-1)) ? DONE : MIX_STAGE;
+            i_new = (i+1) % T;
             j_new = (j+1) % `C;
         end
         DONE: begin

@@ -10,12 +10,13 @@ logic rst;
 logic encrypt;
 logic decrypt;
 logic [4:0] num_rounds;   //when the user specifies num_rounds it is not 0 indexed
-logic [127:0] key;
 logic [31:0] d_in;
 logic [31:0] d_out;
 logic done;
-
+logic [15:0] subkeys [0:33];
 logic [31:0] temp_data;
+
+assign subkeys = {16'd55048, 16'd43744, 16'd48559, 16'd27403, 16'd20374, 16'd33387, 16'd2062, 16'd61013, 16'd49237, 16'd33709, 16'd16278, 16'd65452, 16'd9968, 16'd4572, 16'd34933, 16'd35205, 16'd37470, 16'd42119, 16'd21025, 16'd13567, 16'd19718, 16'd1446, 16'd11664, 16'd40137, 16'd19576, 16'd15720, 16'd15720,16'd15720,16'd15720,16'd15720,16'd15720,16'd15720,16'd15720,16'd15720};
 
 
 algo Algo(
@@ -24,7 +25,7 @@ algo Algo(
     .encrypt(encrypt),
     .decrypt(decrypt),
     .num_rounds(num_rounds),
-    .key(key),
+    .subkeys(subkeys),
     .d_in(d_in),
     .d_out(d_out),
     .done(done)
@@ -32,7 +33,7 @@ algo Algo(
 
 default clocking ckb @(posedge clk);
     input d_out, done;
-    output rst, encrypt, decrypt, num_rounds, key, d_in;
+    output rst, encrypt, decrypt, num_rounds, d_in;
 endclocking
 
 
@@ -55,7 +56,6 @@ task set_defaults();
     encrypt <= 0;
     decrypt <= 0;
     num_rounds <= 12;
-    key <= 0;
     d_in <= 0;
 endtask
 

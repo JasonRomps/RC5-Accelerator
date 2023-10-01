@@ -2,12 +2,14 @@
 module top_tb;
 
 
-logic clk;
 logic rst;
-logic encrypt;
-logic decrypt;
-logic [4:0] num_rounds;   //when the user specifies num_rounds it is not 0 indexed
+logic clk;
+logic [4:0] num_rounds;
 logic [127:0] key;
+logic load_key;
+logic key_ready;
+logic start_encrypt;
+logic start_decrypt;
 logic [31:0] d_in;
 logic [31:0] d_out;
 logic done;
@@ -15,21 +17,11 @@ logic done;
 logic [31:0] temp_data;
 
 
-algo Algo(
-    .clk(clk),
-    .rst(rst),
-    .encrypt(encrypt),
-    .decrypt(decrypt),
-    .num_rounds(num_rounds),
-    .key(key),
-    .d_in(d_in),
-    .d_out(d_out),
-    .done(done)
-);
+rc5 RC5(.*);
 
 default clocking ckb @(posedge clk);
-    input d_out, done;
-    output rst, encrypt, decrypt, num_rounds, key, d_in;
+    input d_out, done, key_ready;
+    output rst, num_rounds, start_decrypt, start_encrypt, load_key, key, d_in;
 endclocking
 
 
@@ -42,53 +34,52 @@ end
 
 task reset();
     rst <= 0;
-    ##1;
+    ##5;
     rst <= 1;
-    ##1;
+    ##5;
 endtask
 
 task set_defaults();
-    rst <= 1;
-    encrypt <= 0;
-    decrypt <= 0;
+    rst <= '1;
+    start_encrypt <= '0;
+    start_decrypt <= '0;
     num_rounds <= 12;
-    key <= 0;
-    d_in <= 0;
+    load_key <= '0;
+    key <= '0;
+    d_in <= '0;
 endtask
 
-task do_encrypt(input logic [31:0] data_i);
-    d_in <= data_i;
-    encrypt <= 1'b1;
+task load_new_key(input logic [127:0] key_new);
+    key <= key_new;
+    load_key <= 1'b1;
     ##1;
-    encrypt <= 1'b0;
-    while(done != 1'b1) begin
-        // $display("A:(%x), B:(%x)", Algo.A, Algo.B);
-        // $display("%x", Algo.A_rot_out_dec);
-        ##1;
-    end
+    load_key <= 1'b0;
+    while(~key_ready) ##1;
+endtask
+
+task test_enc_dec(input logic [31:0] data);
+    d_in <= data;
+    start_encrypt <= '1;
+    ##1;
+    start_encrypt <= '0;
+    while(~done) ##1;
     temp_data <= d_out;
     ##1;
-endtask
-
-task do_decrypt(input logic [31:0] data_i); 
-    d_in <= data_i;
-    decrypt <= 1'b1;
+    d_in <= temp_data;
+    start_decrypt <= '1;
     ##1;
-    decrypt <= 1'b0;
-    while(done != 1'b1) begin
-        ##1;
-    end
-    temp_data <= d_out;
-    ##1;
-endtask
+    start_decrypt <= '0;
+    while(~done) ##1;
 
-function check_encryption(input logic [31:0] data_i);
-    assert (data_i == temp_data) 
+    assert (d_out == data) 
         else begin
-            $error("Encryption/Decryption Failed: data in (0x%x) != data out (0x%x)", data_i, temp_data);
+            $error("Encryption/Decryption Failed: data in (0x%x) != data out (0x%x)", data, d_out);
             $finish;
         end
-endfunction
+endtask
+
+// function check_encryption(input logic [31:0] data_i);
+// endfunction
 
 initial begin
     $fsdbDumpfile("dump.fsdb");
@@ -98,9 +89,8 @@ initial begin
     reset();
 
     // Ensure encrypt state machine works
-    do_encrypt(32'hecebeceb);
-    do_decrypt(temp_data);
-    check_encryption(32'hecebeceb);
+    load_new_key(128'hdeadbeefdeadbeefdeadbeefdeadbeef);
+    test_enc_dec(32'h12345678);
 
     $display("SUCCESS: TESTBENCH ENDED WITHOUT ERROR");
     $finish;

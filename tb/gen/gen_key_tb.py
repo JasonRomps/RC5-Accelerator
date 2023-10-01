@@ -6,7 +6,7 @@ prefix = """
 `define W_size 16 // word size (PARAMETER)
 `define K_size 128 // Key size (PARAMETER)
 `define U 2 // W_size/2
-`define T 26 // 2*(number of rounds + 1)
+`define T 34 // 2*(number of rounds + 1)
 `define B 16 // key size in bytes
 `define C 8 // c=b/u=16/2=8
 `define P 16'hb7e1
@@ -65,7 +65,7 @@ task test_expansion(logic[`K_size-1:0] test_key, logic [`W_size-1:0] test_subkey
         ##1;
     end
 
-    for(int i = 0; i < `T; i++) begin
+    for(int i = 0; i < ((num_rounds+1)<<1); i++) begin
         assert(test_subkey[i] == sub[i])
             else begin
                 $error("Bad Subkey Value: 0x%x at position %0d, should be 0x%x", sub[i], i, test_subkey[i]);

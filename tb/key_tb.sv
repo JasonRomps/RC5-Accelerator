@@ -2,14 +2,14 @@
 `define W_size 16 // word size (PARAMETER)
 `define K_size 128 // Key size (PARAMETER)
 `define U 2 // W_size/2
-`define T 26 // 2*(number of rounds + 1)
+`define T 34 // 2*(number of rounds + 1)
 `define B 16 // key size in bytes
 `define C 8 // c=b/u=16/2=8
 `define P 16'hb7e1
 `define Q 16'h9e37
 
 // UNCOMMENT THIS DEFINE FOR ALL 10,000 TEST CASES!!!!
-`define FULL
+// `define FULL
 
 `timescale 1ns / 1ps
 module key_tb;
@@ -17,8 +17,8 @@ module key_tb;
 logic start;
 logic clk;
 logic rst;
-logic [128:0] key;
-logic [`W_size-1:0] sub [0:`T-1];
+logic [127:0] key;
+logic [`W_size-1:0] subkeys [0:`T-1];
 logic [4:0] num_rounds;
 logic ready;
 
@@ -27,7 +27,7 @@ assign num_rounds = 12;
 keygen Keygen(.*);
 
 default clocking ckb @(posedge clk);
-    input sub, ready;
+    input subkeys, ready;
     output rst, key, start;
 endclocking
 
@@ -59,10 +59,10 @@ task test_expansion(logic[`K_size-1:0] test_key, logic [`W_size-1:0] test_subkey
         ##1;
     end
 
-    for(int i = 0; i < `T; i++) begin
-        assert(test_subkey[i] == sub[i])
+    for(int i = 0; i < ((num_rounds+1)<<1); i++) begin
+        assert(test_subkey[i] == subkeys[i])
             else begin
-                $error("Bad Subkey Value: 0x%x at position %0d, should be 0x%x", sub[i], i, test_subkey[i]);
+                $error("Bad Subkey Value: 0x%x at position %0d, should be 0x%x", subkeys[i], i, test_subkey[i]);
                 $finish;
             end
     end
@@ -80,7 +80,7 @@ initial begin
     reset();
 
     // Known Test Case
-	test_expansion(128'hdeadbeefdeadbeefdeadbeefdeadbeef, {16'd55048, 16'd43744, 16'd48559, 16'd27403, 16'd20374, 16'd33387, 16'd2062, 16'd61013, 16'd49237, 16'd33709, 16'd16278, 16'd65452, 16'd9968, 16'd4572, 16'd34933, 16'd35205, 16'd37470, 16'd42119, 16'd21025, 16'd13567, 16'd19718, 16'd1446, 16'd11664, 16'd40137, 16'd19576, 16'd15720});
+	test_expansion(128'hdeadbeefdeadbeefdeadbeefdeadbeef, {16'd55048, 16'd43744, 16'd48559, 16'd27403, 16'd20374, 16'd33387, 16'd2062, 16'd61013, 16'd49237, 16'd33709, 16'd16278, 16'd65452, 16'd9968, 16'd4572, 16'd34933, 16'd35205, 16'd37470, 16'd42119, 16'd21025, 16'd13567, 16'd19718, 16'd1446, 16'd11664, 16'd40137, 16'd19576, 16'd15720, 16'd0, 16'd0, 16'd0, 16'd0, 16'd0, 16'd0, 16'd0, 16'd0});
 
     // AUTO GENERATED TEST CASES
 	`ifdef FULL
