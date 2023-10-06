@@ -33,9 +33,9 @@ always begin
 end
 
 task reset();
-    rst <= 0;
-    ##5;
     rst <= 1;
+    ##5;
+    rst <= 0;
     ##5;
 endtask
 
@@ -76,10 +76,19 @@ task test_enc_dec(input logic [31:0] data);
             $error("Encryption/Decryption Failed: data in (0x%x) != data out (0x%x)", data, d_out);
             $finish;
         end
+
+    ##1;
 endtask
 
 // function check_encryption(input logic [31:0] data_i);
 // endfunction
+
+class RandData;
+    rand bit [31:0] data;
+endclass : RandData
+
+RandData rand_data = new; 
+logic [31:0] r_data;
 
 initial begin
     $fsdbDumpfile("dump.fsdb");
@@ -90,7 +99,12 @@ initial begin
 
     // Ensure encrypt state machine works
     load_new_key(128'hdeadbeefdeadbeefdeadbeefdeadbeef);
-    test_enc_dec(32'h12345678);
+    for(int i = 8; i < 100000; i++) begin
+        rand_data.randomize();
+        r_data = rand_data.data;
+        test_enc_dec(r_data);
+    end
+    
 
     $display("SUCCESS: TESTBENCH ENDED WITHOUT ERROR");
     $finish;

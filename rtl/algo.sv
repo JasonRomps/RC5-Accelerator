@@ -82,7 +82,7 @@ rotr A_Rotr(
 
 //TOP LEVEL STATE TRANSITION
 always_ff @ (posedge clk) begin
-    if(~rst) begin
+    if(rst) begin
         algo_state <= IDLE;
 		dec_counter <= 5'd0;
 		A <= 16'd0;
@@ -116,7 +116,7 @@ always_comb begin
         IDLE: begin
 			new_A = A; // Hold Value in temp registers
 			new_B = B;
-            if(rst == 0) begin
+            if(rst == 1) begin
                 algo_next_state = IDLE;
             end
             else if(encrypt && num_rounds == 0) begin
