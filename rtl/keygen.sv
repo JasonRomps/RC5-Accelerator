@@ -96,7 +96,7 @@ always_ff @(posedge clk) begin
             end
             L_GEN_STATE: begin
                 L[l_counter] <= (L[l_counter] << 8) + key_form[l_over_counter];
-                l_over_counter--;
+                l_over_counter<=l_over_counter-1;
             end
             S_GEN_STATE: begin
                 if(s_counter == 0) begin
@@ -104,7 +104,7 @@ always_ff @(posedge clk) begin
                 end else begin
                     S[s_counter] <= S[s_counter-1] + `Q;
                 end
-                s_counter++;
+                s_counter<=s_counter+1;
             end
             MIX_STAGE: begin
                 // Preform Array Updates Here
