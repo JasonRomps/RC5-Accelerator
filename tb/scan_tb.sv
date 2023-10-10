@@ -68,7 +68,7 @@ task reset();
 endtask
 
 
-task set_scan_in_data(); //use inputs for each value in future
+task set_scan_in_key(); //use inputs for each value in future
   //[127:0] key
   //[159:128] d_in
   //[164:160] num_rounds
@@ -77,9 +77,25 @@ task set_scan_in_data(); //use inputs for each value in future
   //[167] start_decrypt
 
   scan_in_data[127:0] <= 128'h2B7E151628AED2A6ABF7158809CF4F3C; //hardcoded key value for now
-  scan_in_data[159:128] <= 32'hD87FAB42; //hardcoded data in for now
+  scan_in_data[159:128] <= 32'h0; //hardcoded data in for now
   scan_in_data[164:160] <= 5'b11111;
   scan_in_data[165] <= 1;
+  scan_in_data[166] <= 0;
+  scan_in_data[167] <= 0;
+endtask
+
+task set_scan_in_data(); //use inputs for each value in future
+  //[127:0] key
+  //[159:128] d_in
+  //[164:160] num_rounds
+  //[165] load_key
+  //[166] start_encrypt
+  //[167] start_decrypt
+
+  scan_in_data[127:0] <= 128'h0; //hardcoded key value for now
+  scan_in_data[159:128] <= 32'hD87FAB42; //hardcoded data in for now
+  scan_in_data[164:160] <= 5'b11111;
+  scan_in_data[165] <= 0;
   scan_in_data[166] <= 1;
   scan_in_data[167] <= 0;
 endtask
@@ -104,6 +120,22 @@ task feed_scan_out_data();
     scan_en = 0;
 endtask
 
+task set_scan_in_decrypt_data(); //use inputs for each value in future
+  //[127:0] key
+  //[159:128] d_in
+  //[164:160] num_rounds
+  //[165] load_key
+  //[166] start_encrypt
+  //[167] start_decrypt
+
+  scan_in_data[127:0] <= 128'h0; //hardcoded key value for now
+  scan_in_data[159:128] <= 32'h737387D0; //hardcoded data in for now
+  scan_in_data[164:160] <= 5'b11111;
+  scan_in_data[165] <= 0;
+  scan_in_data[166] <= 0;
+  scan_in_data[167] <= 1;
+endtask
+
 task set_defaults();
     rst <= '1;
     start_encrypt <= '0;
@@ -126,6 +158,22 @@ initial begin
 
     ##1;
 
+    set_scan_in_key();
+
+    ##1;
+
+    feed_scan_in_data();
+
+    ##10;
+
+    begin_validate = 1;
+
+    ##100;
+
+    begin_validate = 0;
+
+    ##1;
+
     set_scan_in_data();
 
     ##1;
@@ -144,11 +192,27 @@ initial begin
 
     begin_validate = 0;
 
-    ##100;    
+    ##100;   
 
-    reset();
+    set_scan_in_decrypt_data();
 
-    
+    ##1;
+
+    feed_scan_in_data();
+
+    ##10 
+
+    begin_validate = 1;
+
+    ##100;
+
+    feed_scan_out_data();
+
+    ##10;
+
+    begin_validate = 0;
+
+    #50;
 
     $display("SUCCESS: TESTBENCH ENDED WITHOUT ERROR");
     $finish;
