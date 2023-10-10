@@ -7,7 +7,8 @@ module algo(
 	input logic [15:0] subkeys [0:33],
     input logic [31:0] d_in,
     output logic [31:0] d_out,
-    output logic done
+    output logic done,
+	input logic begin_validate
 );
 
 logic [5:0] algo_state, algo_next_state;
@@ -140,13 +141,19 @@ always_comb begin
 
         ENCRYPT_DONE: begin
             done = 1'b1;
-            algo_next_state = IDLE;
+			if(begin_validate)
+				algo_next_state = ENCRYPT_DONE;
+			else
+            	algo_next_state = IDLE;
 			d_out = {B, A};
         end
 
         DECRYPT_DONE: begin
             done = 1'b1;
-            algo_next_state = IDLE;
+			if(begin_validate)
+				algo_next_state = DECRYPT_DONE;
+            else
+				algo_next_state = IDLE;
 			d_out = {B - subkeys[1], A - subkeys[0]};
         end
 

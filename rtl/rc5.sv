@@ -27,13 +27,13 @@ logic [15:0] subkeys [0:33];
 
 logic [167:0] scan_values;
 
-logic num_rounds_in;
+logic [4:0] num_rounds_in;
 logic [127:0] key_in;
 logic load_key_in;
 logic start_encrypt_in;
 logic start_decrypt_in;
-logic d_in_in;
-logic d_out_out;
+logic [31:0] d_in_in;
+logic [31:0] d_out_out;
 logic done_out;
 
 
@@ -56,7 +56,8 @@ algo Algo(
     .subkeys(subkeys),
     .d_in(d_in_in),
     .d_out(d_out_out),
-    .done(done_out)
+    .done(done_out),
+    .begin_validate(begin_validate)
 );
 
 //validation procedure:
@@ -80,28 +81,30 @@ logic [32:0] shift_reg_outputs;
 
 
   
-  always_ff @(posedge clk or posedge reset) begin
-    if (reset)
+  always_ff @(posedge clk or posedge rst) begin
+    if (rst)
       shift_reg_inputs <= 0;
     else if (scan_en) begin
-      shift_reg_inputs <= {shift_reg[166:0], scan_in};
-      shift_reg_outputs <= {shift_reg_outputs[31:0], 0};
+      shift_reg_inputs <= {shift_reg_inputs[166:0], scan_in};
+      shift_reg_outputs <= {shift_reg_outputs[31:0], 1'b0};
+    end
+    else if(begin_validate & ~scan_en) begin
+        shift_reg_outputs[31:0] <= d_out_out;
+        shift_reg_outputs[32] <= done_out;
     end
   end
 
   assign scan_out = scan_en ? shift_reg_outputs[32] : 1'b0;
 
 always_comb begin
-    if(begin_validate) begin
+    if(begin_validate & ~scan_en) begin
         key_in = shift_reg_inputs[127:0];
         d_in_in = shift_reg_inputs[159:128];
         num_rounds_in = shift_reg_inputs[164:160];
         load_key_in = shift_reg_inputs[165];
         start_encrypt_in = shift_reg_inputs[166];
         start_decrypt_in = shift_reg_inputs[167];
-        shift_reg_outputs[31:0] = d_out_out;
         d_out = 0;
-        shift_reg_outputs[32] = done_out;
         done = 0;
     end
     else begin
@@ -111,7 +114,6 @@ always_comb begin
         load_key_in = load_key;
         start_encrypt_in = start_encrypt;
         start_decrypt_in = start_decrypt;
-        shift_reg_outputs = 0;
         d_out = d_out_out;
         done = done_out;
     end
