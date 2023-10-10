@@ -1,6 +1,8 @@
 `timescale 1ns / 1ps
 module top_tb;
 
+`define NUM_KEYS 100
+`define NUM_ENC_DEC 500
 
 logic rst;
 logic clk;
@@ -87,8 +89,15 @@ class RandData;
     rand bit [31:0] data;
 endclass : RandData
 
-RandData rand_data = new; 
+class RandKey;
+    rand bit [127:0] key;
+endclass : RandKey
+
+RandData rand_data = new;
 logic [31:0] r_data;
+
+RandKey rand_key = new;
+logic [127:0] r_key;
 
 initial begin
     $fsdbDumpfile("dump.fsdb");
@@ -98,11 +107,18 @@ initial begin
     reset();
 
     // Ensure encrypt state machine works
-    load_new_key(128'hdeadbeefdeadbeefdeadbeefdeadbeef);
-    for(int i = 8; i < 100000; i++) begin
-        rand_data.randomize();
-        r_data = rand_data.data;
-        test_enc_dec(r_data);
+    for(int j = 0; j < `NUM_KEYS; j++) begin
+        rand_key.randomize();
+        r_key = rand_key.key;
+        load_new_key(r_key);
+
+        $display("Keys: (%0d/%0d)", j, `NUM_KEYS);
+
+        for(int i = 0; i < `NUM_ENC_DEC; i++) begin
+            rand_data.randomize();
+            r_data = rand_data.data;
+            test_enc_dec(r_data);
+        end
     end
     
 
