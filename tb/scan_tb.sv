@@ -146,6 +146,10 @@ initial begin
 
     ##100;    
 
+    reset();
+
+    
+
     $display("SUCCESS: TESTBENCH ENDED WITHOUT ERROR");
     $finish;
 

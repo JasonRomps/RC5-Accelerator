@@ -82,8 +82,10 @@ logic [32:0] shift_reg_outputs;
 
   
   always_ff @(posedge clk or posedge rst) begin
-    if (rst)
+    if (rst) begin
       shift_reg_inputs <= 0;
+      shift_reg_outputs <= 32'b0;
+    end
     else if (scan_en) begin
       shift_reg_inputs <= {shift_reg_inputs[166:0], scan_in};
       shift_reg_outputs <= {shift_reg_outputs[31:0], 1'b0};
