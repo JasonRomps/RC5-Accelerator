@@ -78,7 +78,7 @@ task set_scan_in_key(); //use inputs for each value in future
 
   scan_in_data[127:0] <= 128'h2B7E151628AED2A6ABF7158809CF4F3C; //hardcoded key value for now
   scan_in_data[159:128] <= 32'h0; //hardcoded data in for now
-  scan_in_data[164:160] <= 5'b11111;
+  scan_in_data[164:160] <= 5'b01111;
   scan_in_data[165] <= 1;
   scan_in_data[166] <= 0;
   scan_in_data[167] <= 0;
@@ -94,7 +94,7 @@ task set_scan_in_data(); //use inputs for each value in future
 
   scan_in_data[127:0] <= 128'h0; //hardcoded key value for now
   scan_in_data[159:128] <= 32'hD87FAB42; //hardcoded data in for now
-  scan_in_data[164:160] <= 5'b11111;
+  scan_in_data[164:160] <= 5'b01111;
   scan_in_data[165] <= 0;
   scan_in_data[166] <= 1;
   scan_in_data[167] <= 0;
@@ -129,8 +129,8 @@ task set_scan_in_decrypt_data(); //use inputs for each value in future
   //[167] start_decrypt
 
   scan_in_data[127:0] <= 128'h0; //hardcoded key value for now
-  scan_in_data[159:128] <= 32'h737387D0; //hardcoded data in for now
-  scan_in_data[164:160] <= 5'b11111;
+  scan_in_data[159:128] <= 32'hE460BA1B; //hardcoded data in for now
+  scan_in_data[164:160] <= 5'b01111;
   scan_in_data[165] <= 0;
   scan_in_data[166] <= 0;
   scan_in_data[167] <= 1;
@@ -140,7 +140,7 @@ task set_defaults();
     rst <= '1;
     start_encrypt <= '0;
     start_decrypt <= '0;
-    num_rounds <= 5'b11111;
+    num_rounds <= 5'b01111;
     load_key <= '0;
     key <= '0;
     d_in <= '0;
