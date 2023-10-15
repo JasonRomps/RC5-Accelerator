@@ -29,7 +29,7 @@ logic [6:0] l_over_counter, mix_counter;
 logic [5:0] s_counter, l_counter; // Keep track of where we are in the L and S gen loops
 logic [6:0] T;
 
-assign T = (num_rounds + 1) << 1;
+assign T = (num_rounds + 7'b1) << 7'b1;
 
 assign l_counter = l_over_counter[6:1];
 
@@ -59,44 +59,44 @@ assign subkeys = S;
 // top level logic
 always_ff @(posedge clk) begin
     if(rst) begin
-        s_counter <= 0;
-        l_over_counter <= 6'b001111;
-        mix_counter <= 0;
+        s_counter <= 6'b0;
+        l_over_counter <= 7'b0001111;
+        mix_counter <= 7'b0;
         state <= IDLE;
 
-        A <= 0;
-        B <= 0;
-        j <= 0;
-        i <= 0;
+        A <= 16'b0;
+        B <= 16'b0;
+        j <= 16'b0;
+        i <= 16'b0;
 
         // Reset L array to 0 on rst
         for(int i = 0; i < `C; i++) begin
-            L[i] <= 0;
+            L[i] <= 16'b0;
         end
         for(int i = 0; i < `T; i++) begin
-            S[i] <= 0;
+            S[i] <= 16'b0;
         end
     end
     else begin
         case(state)
             INIT: begin
-                s_counter <= 0;
-                l_over_counter <= 6'b001111;
-                mix_counter <= 0;
-                A <= 0;
-                B <= 0;
-                j <= 0;
-                i <= 0;
+                s_counter <= 6'b0;
+                l_over_counter <= 7'b0001111;
+                mix_counter <= 16'b0;
+                A <= 16'b0;
+                B <= 16'b0;
+                j <= 16'b0;
+                i <= 16'b0;
                 for(int i = 0; i < `C; i++) begin
-                    L[i] <= 0;
+                    L[i] <= 16'b0;
                 end
                 for(int i = 0; i < `T; i++) begin
-                    S[i] <= 0;
+                    S[i] <= 16'b0;
                 end
             end
             L_GEN_STATE: begin
                 L[l_counter] <= (L[l_counter] << 8) + key_form[l_over_counter];
-                l_over_counter<=l_over_counter-1;
+                l_over_counter<=l_over_counter-7'b1;
             end
             S_GEN_STATE: begin
                 if(s_counter == 0) begin
@@ -104,11 +104,11 @@ always_ff @(posedge clk) begin
                 end else begin
                     S[s_counter] <= S[s_counter-1] + `Q;
                 end
-                s_counter<=s_counter+1;
+                s_counter<=s_counter+6'b1;
             end
             MIX_STAGE: begin
                 // Preform Array Updates Here
-                mix_counter <= mix_counter + 1;
+                mix_counter <= mix_counter + 7'b1;
                 S[i] <= A_new;
                 L[j] <= B_new;
                 A <= A_new;
@@ -123,9 +123,9 @@ end
 
 //state machine
 always_comb begin
-    ready = 0;
-    j_new = 0;
-    i_new = 0;
+    ready = 1'b0;
+    j_new = 16'b0;
+    i_new = 16'b0;
 
     case(state)
         IDLE: begin
@@ -138,12 +138,12 @@ always_comb begin
             next_state = (l_over_counter == 0) ? S_GEN_STATE : L_GEN_STATE;
         end
         S_GEN_STATE: begin
-            next_state = (s_counter == T)  ? MIX_STAGE : S_GEN_STATE;
+            next_state = (s_counter == T[5:0])  ? MIX_STAGE : S_GEN_STATE;
         end
         MIX_STAGE: begin
-            next_state = (mix_counter == ((3*T)-1)) ? DONE : MIX_STAGE;
-            i_new = (i+1) % T;
-            j_new = (j+1) % `C;
+            next_state = (mix_counter == ((7'd3*T)-7'b1)) ? DONE : MIX_STAGE;
+            i_new = (i+16'b1) % T;
+            j_new = (j+16'b1) % `C;
         end
         DONE: begin
             ready = 1;

@@ -110,7 +110,7 @@ always_comb begin
 	dec_a_s_val = 16'd0;
 	dec_b_s_val = 16'd0;
 
-	new_dec_counter = dec_counter - 1;
+	new_dec_counter = dec_counter - 5'b1;
 
     case(algo_state)
 
