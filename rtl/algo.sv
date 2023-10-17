@@ -135,7 +135,7 @@ always_comb begin
 				algo_next_state = DECRYPT_1;
 				new_A = d_in[15:0];
 				new_B = d_in[31:16];
-				new_dec_counter <= num_rounds;
+				new_dec_counter = num_rounds;
 			end
         end
 
