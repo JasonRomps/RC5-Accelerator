@@ -4,6 +4,8 @@ module top_tb;
 `define NUM_KEYS 100
 `define NUM_ENC_DEC 500
 
+logic scan_en, scan_in, scan_out, begin_validate;
+
 logic rst;
 logic clk;
 logic [4:0] num_rounds;
@@ -49,6 +51,9 @@ task set_defaults();
     load_key <= '0;
     key <= '0;
     d_in <= '0;
+    scan_en <= '0;
+    scan_in <= '0;
+    begin_validate <= '0;
 endtask
 
 task load_new_key(input logic [127:0] key_new);

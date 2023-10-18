@@ -112,6 +112,10 @@ always_comb begin
 
 	new_dec_counter = dec_counter - 5'b1;
 
+	algo_next_state = IDLE;
+	new_A = '0;
+	new_B = '0;
+
     case(algo_state)
 
         IDLE: begin
