@@ -3,7 +3,8 @@
 `define U 2 // W_size/2
 `define T 34 // 2*(number of rounds + 1)
 `define B 16 // key size in bytes
-`define C 8 // c=b/u=16/2=8
+`define C 16'd8 // c=b/u=16/2=8
+`define C_INT 16
 `define P 16'hb7e1
 `define Q 16'h9e37
 
@@ -21,7 +22,7 @@ logic [`W_size-1:0] S [0:`T-1];
 logic [`W_size-1:0] L [0:`C-1];
 
 logic [7:0] key_form [0:`B-1];
-assign key_form = {key[127:120], key[119:112], key[111:104], key[103:96], key[95:88], key[87:80], key[79:72], key[71:64], key[63:56], key[55:48], key[47:40], key[39:32], key[31:24], key[23:16], key[15:8], key[7:0]};
+assign key_form = '{key[127:120], key[119:112], key[111:104], key[103:96], key[95:88], key[87:80], key[79:72], key[71:64], key[63:56], key[55:48], key[47:40], key[39:32], key[31:24], key[23:16], key[15:8], key[7:0]};
 
 // States
 logic [2:0] state, next_state;
@@ -82,7 +83,7 @@ always_ff @(posedge clk) begin
             INIT: begin
                 s_counter <= 6'b0;
                 l_over_counter <= 7'b0001111;
-                mix_counter <= 16'b0;
+                mix_counter <= 7'b0;
                 A <= 16'b0;
                 B <= 16'b0;
                 j <= 16'b0;
@@ -127,9 +128,12 @@ always_comb begin
     j_new = 16'b0;
     i_new = 16'b0;
 
+    next_state = IDLE;
+
     case(state)
         IDLE: begin
             next_state = (start == 1) ? INIT : IDLE;
+            ready = 1'b0;
         end
         INIT: begin
             next_state = L_GEN_STATE;
@@ -146,8 +150,8 @@ always_comb begin
             j_new = (j+16'b1) % `C;
         end
         DONE: begin
-            ready = 1;
-            next_state = IDLE;
+            ready = 1'b1;
+            next_state = (start == 1) ? DONE : IDLE;
         end
     endcase
 end

@@ -51,8 +51,13 @@ parameter DECRYPT_14 = 6'b111101;
 parameter DECRYPT_15 = 6'b111110;
 parameter DECRYPT_16 = 6'b111111;
 
+logic enc;
+assign enc = (algo_state[5:4] == 2'b10 || encrypt);
+logic dec;
+assign dec = (algo_state[5:4] == 2'b11 || decrypt);
 
-logic [15:0] A, B, new_A, new_B;
+
+logic [15:0] A, B, new_A_enc, new_B_enc, new_A_dec, new_B_dec;
 logic [15:0] A_rot_out_enc, B_rot_out_enc, A_rot_out_dec, B_rot_out_dec;
 logic [15:0] dec_a_s_val, dec_b_s_val;
 logic [4:0] dec_counter, new_dec_counter; 
@@ -64,8 +69,8 @@ rotl A_Rotl(
 );
 
 rotl B_Rotl(
-	.data_i(B^new_A),
-	.n_i(new_A),
+	.data_i(B^new_A_enc),
+	.n_i(new_A_enc),
 	.data_o(B_rot_out_enc)
 );
 
@@ -77,7 +82,7 @@ rotr B_Rotr(
 
 rotr A_Rotr(
 	.data_i(A - dec_a_s_val),
-	.n_i(new_B),
+	.n_i(new_B_dec),
 	.data_o(A_rot_out_dec)
 );
 
@@ -96,8 +101,15 @@ always_ff @ (posedge clk) begin
     else begin
         algo_state <= algo_next_state;
 		dec_counter <= new_dec_counter;
-		A <= new_A;
-		B <= new_B;
+
+		if(enc) begin
+			A <= new_A_enc;
+			B <= new_B_enc;
+		end
+		else if(dec) begin
+			A <= new_A_dec;
+			B <= new_B_dec;
+		end
     end
 end
 
@@ -113,14 +125,16 @@ always_comb begin
 	new_dec_counter = dec_counter - 5'b1;
 
 	algo_next_state = IDLE;
-	new_A = '0;
-	new_B = '0;
+	new_A_enc = '0;
+	new_B_enc = '0;
+	new_A_dec = '0;
+	new_B_dec = '0;
 
     case(algo_state)
 
         IDLE: begin
-			new_A = A; // Hold Value in temp registers
-			new_B = B;
+			// new_A = A; // Hold Value in temp registers
+			// new_B = B;
             if(rst == 1) begin
                 algo_next_state = IDLE;
             end
@@ -132,13 +146,13 @@ always_comb begin
             end
             else if(encrypt) begin
                 algo_next_state = ENCRYPT_1;
-				new_A = d_in[15:0] + subkeys[0];
-				new_B = d_in[31:16] + subkeys[1];
+				new_A_enc = d_in[15:0] + subkeys[0];
+				new_B_enc = d_in[31:16] + subkeys[1];
             end
             else if(decrypt) begin
 				algo_next_state = DECRYPT_1;
-				new_A = d_in[15:0];
-				new_B = d_in[31:16];
+				new_A_dec = d_in[15:0];
+				new_B_dec = d_in[31:16];
 				new_dec_counter = num_rounds;
 			end
         end
@@ -163,99 +177,99 @@ always_comb begin
 
 		ENCRYPT_1: begin
 			algo_next_state = (num_rounds == 1) ? ENCRYPT_DONE : ENCRYPT_2;
-			new_A = A_rot_out_enc + subkeys[2 * 1]; // 1 Because of Round 1
-			new_B = B_rot_out_enc + subkeys[(2 * 1) + 1];
+			new_A_enc = A_rot_out_enc + subkeys[2 * 1]; // 1 Because of Round 1
+			new_B_enc = B_rot_out_enc + subkeys[(2 * 1) + 1];
 			//encryption logic
 		end
 		ENCRYPT_2: begin
 			algo_next_state = (num_rounds == 2) ? ENCRYPT_DONE : ENCRYPT_3;
-			new_A = A_rot_out_enc + subkeys[2 * 2]; // 2 Because of Round 2
-			new_B = B_rot_out_enc + subkeys[(2 * 2) + 1];
+			new_A_enc = A_rot_out_enc + subkeys[2 * 2]; // 2 Because of Round 2
+			new_B_enc = B_rot_out_enc + subkeys[(2 * 2) + 1];
 			//encryption logic
 		end
 		ENCRYPT_3: begin
 			algo_next_state = (num_rounds == 3) ? ENCRYPT_DONE : ENCRYPT_4;
-			new_A = A_rot_out_enc + subkeys[2 * 3]; // 3 Because of Round 3
-			new_B = B_rot_out_enc + subkeys[(2 * 3) + 1];
+			new_A_enc = A_rot_out_enc + subkeys[2 * 3]; // 3 Because of Round 3
+			new_B_enc = B_rot_out_enc + subkeys[(2 * 3) + 1];
 			//encryption logic
 		end
 		ENCRYPT_4: begin
 			algo_next_state = (num_rounds == 4) ? ENCRYPT_DONE : ENCRYPT_5;
-			new_A = A_rot_out_enc + subkeys[2 * 4]; // 4 Because of Round 4
-			new_B = B_rot_out_enc + subkeys[(2 * 4) + 1];
+			new_A_enc = A_rot_out_enc + subkeys[2 * 4]; // 4 Because of Round 4
+			new_B_enc = B_rot_out_enc + subkeys[(2 * 4) + 1];
 			//encryption logic
 		end
 		ENCRYPT_5: begin
 			algo_next_state = (num_rounds == 5) ? ENCRYPT_DONE : ENCRYPT_6;
-			new_A = A_rot_out_enc + subkeys[2 * 5]; // 5 Because of Round 5
-			new_B = B_rot_out_enc + subkeys[(2 * 5) + 1];
+			new_A_enc = A_rot_out_enc + subkeys[2 * 5]; // 5 Because of Round 5
+			new_B_enc = B_rot_out_enc + subkeys[(2 * 5) + 1];
 			//encryption logic
 		end
 		ENCRYPT_6: begin
 			algo_next_state = (num_rounds == 6) ? ENCRYPT_DONE : ENCRYPT_7;
-			new_A = A_rot_out_enc + subkeys[2 * 6]; // 6 Because of Round 6
-			new_B = B_rot_out_enc + subkeys[(2 * 6) + 1];
+			new_A_enc = A_rot_out_enc + subkeys[2 * 6]; // 6 Because of Round 6
+			new_B_enc = B_rot_out_enc + subkeys[(2 * 6) + 1];
 			//encryption logic
 		end
 		ENCRYPT_7: begin
 			algo_next_state = (num_rounds == 7) ? ENCRYPT_DONE : ENCRYPT_8;
-			new_A = A_rot_out_enc + subkeys[2 * 7]; // 7 Because of Round 7
-			new_B = B_rot_out_enc + subkeys[(2 * 7) + 1];
+			new_A_enc = A_rot_out_enc + subkeys[2 * 7]; // 7 Because of Round 7
+			new_B_enc = B_rot_out_enc + subkeys[(2 * 7) + 1];
 			//encryption logic
 		end
 		ENCRYPT_8: begin
 			algo_next_state = (num_rounds == 8) ? ENCRYPT_DONE : ENCRYPT_9;
-			new_A = A_rot_out_enc + subkeys[2 * 8]; // 8 Because of Round 8
-			new_B = B_rot_out_enc + subkeys[(2 * 8) + 1];
+			new_A_enc = A_rot_out_enc + subkeys[2 * 8]; // 8 Because of Round 8
+			new_B_enc = B_rot_out_enc + subkeys[(2 * 8) + 1];
 			//encryption logic
 		end
 		ENCRYPT_9: begin
 			algo_next_state = (num_rounds == 9) ? ENCRYPT_DONE : ENCRYPT_10;
-			new_A = A_rot_out_enc + subkeys[2 * 9]; // 9 Because of Round 9
-			new_B = B_rot_out_enc + subkeys[(2 * 9) + 1];
+			new_A_enc = A_rot_out_enc + subkeys[2 * 9]; // 9 Because of Round 9
+			new_B_enc = B_rot_out_enc + subkeys[(2 * 9) + 1];
 			//encryption logic
 		end
 		ENCRYPT_10: begin
 			algo_next_state = (num_rounds == 10) ? ENCRYPT_DONE : ENCRYPT_11;
-			new_A = A_rot_out_enc + subkeys[2 * 10]; // 10 Because of Round 10
-			new_B = B_rot_out_enc + subkeys[(2 * 10) + 1];
+			new_A_enc = A_rot_out_enc + subkeys[2 * 10]; // 10 Because of Round 10
+			new_B_enc = B_rot_out_enc + subkeys[(2 * 10) + 1];
 			//encryption logic
 		end
 		ENCRYPT_11: begin
 			algo_next_state = (num_rounds == 11) ? ENCRYPT_DONE : ENCRYPT_12;
-			new_A = A_rot_out_enc + subkeys[2 * 11]; // 11 Because of Round 11
-			new_B = B_rot_out_enc + subkeys[(2 * 11) + 1];
+			new_A_enc = A_rot_out_enc + subkeys[2 * 11]; // 11 Because of Round 11
+			new_B_enc = B_rot_out_enc + subkeys[(2 * 11) + 1];
 			//encryption logic
 		end
 		ENCRYPT_12: begin
 			algo_next_state = (num_rounds == 12) ? ENCRYPT_DONE : ENCRYPT_13;
-			new_A = A_rot_out_enc + subkeys[2 * 12]; // 12 Because of Round 12
-			new_B = B_rot_out_enc + subkeys[(2 * 12) + 1];
+			new_A_enc = A_rot_out_enc + subkeys[2 * 12]; // 12 Because of Round 12
+			new_B_enc = B_rot_out_enc + subkeys[(2 * 12) + 1];
 			//encryption logic
 		end
 		ENCRYPT_13: begin
 			algo_next_state = (num_rounds == 13) ? ENCRYPT_DONE : ENCRYPT_14;
-			new_A = A_rot_out_enc + subkeys[2 * 13]; // 13 Because of Round 13
-			new_B = B_rot_out_enc + subkeys[(2 * 13) + 1];
+			new_A_enc = A_rot_out_enc + subkeys[2 * 13]; // 13 Because of Round 13
+			new_B_enc = B_rot_out_enc + subkeys[(2 * 13) + 1];
 			//encryption logic
 		end
 		ENCRYPT_14: begin
 			algo_next_state = (num_rounds == 14) ? ENCRYPT_DONE : ENCRYPT_15;
-			new_A = A_rot_out_enc + subkeys[2 * 14]; // 14 Because of Round 14
-			new_B = B_rot_out_enc + subkeys[(2 * 14) + 1];
+			new_A_enc = A_rot_out_enc + subkeys[2 * 14]; // 14 Because of Round 14
+			new_B_enc = B_rot_out_enc + subkeys[(2 * 14) + 1];
 			//encryption logic
 		end
 		ENCRYPT_15: begin
 			algo_next_state = (num_rounds == 15) ? ENCRYPT_DONE : ENCRYPT_16;
-			new_A = A_rot_out_enc + subkeys[2 * 15]; // 11 Because of Round 15
-			new_B = B_rot_out_enc + subkeys[(2 * 15) + 1];
+			new_A_enc = A_rot_out_enc + subkeys[2 * 15]; // 11 Because of Round 15
+			new_B_enc = B_rot_out_enc + subkeys[(2 * 15) + 1];
 			//encryption logic
 		end
 
         ENCRYPT_16: begin
             algo_next_state = ENCRYPT_DONE;
-			new_A = A_rot_out_enc + subkeys[2 * 16]; // 16 Because of Round 16
-			new_B = B_rot_out_enc + subkeys[(2 * 16) + 1];
+			new_A_enc = A_rot_out_enc + subkeys[2 * 16]; // 16 Because of Round 16
+			new_B_enc = B_rot_out_enc + subkeys[(2 * 16) + 1];
             //encryption logic
         end
 
@@ -264,8 +278,8 @@ always_comb begin
 			dec_b_s_val = subkeys[(2*dec_counter)+1];
 			dec_a_s_val = subkeys[(2*dec_counter)];
 			
-			new_B = B_rot_out_dec ^ A;
-			new_A = A_rot_out_dec ^ new_B;
+			new_B_dec = B_rot_out_dec ^ A;
+			new_A_dec = A_rot_out_dec ^ new_B_dec;
 			//decryption logic
 		end
 		DECRYPT_2: begin
@@ -273,8 +287,8 @@ always_comb begin
 			dec_b_s_val = subkeys[(2*dec_counter)+1];
 			dec_a_s_val = subkeys[(2*dec_counter)];
 
-			new_B = B_rot_out_dec ^ A;
-			new_A = A_rot_out_dec ^ new_B;
+			new_B_dec = B_rot_out_dec ^ A;
+			new_A_dec = A_rot_out_dec ^ new_B_dec;
 			//decryption logic
 		end
 		DECRYPT_3: begin
@@ -282,8 +296,8 @@ always_comb begin
 			dec_b_s_val = subkeys[(2*dec_counter)+1];
 			dec_a_s_val = subkeys[(2*dec_counter)];
 
-			new_B = B_rot_out_dec ^ A;
-			new_A = A_rot_out_dec ^ new_B;
+			new_B_dec = B_rot_out_dec ^ A;
+			new_A_dec = A_rot_out_dec ^ new_B_dec;
 			//decryption logic
 		end
 		DECRYPT_4: begin
@@ -291,8 +305,8 @@ always_comb begin
 			dec_b_s_val = subkeys[(2*dec_counter)+1];
 			dec_a_s_val = subkeys[(2*dec_counter)];
 
-			new_B = B_rot_out_dec ^ A;
-			new_A = A_rot_out_dec ^ new_B;
+			new_B_dec = B_rot_out_dec ^ A;
+			new_A_dec = A_rot_out_dec ^ new_B_dec;
 			//decryption logic
 		end
 		DECRYPT_5: begin
@@ -300,8 +314,8 @@ always_comb begin
 			dec_b_s_val = subkeys[(2*dec_counter)+1];
 			dec_a_s_val = subkeys[(2*dec_counter)];
 
-			new_B = B_rot_out_dec ^ A;
-			new_A = A_rot_out_dec ^ new_B;
+			new_B_dec = B_rot_out_dec ^ A;
+			new_A_dec = A_rot_out_dec ^ new_B_dec;
 			//decryption logic
 		end
 		DECRYPT_6: begin
@@ -309,8 +323,8 @@ always_comb begin
 			dec_b_s_val = subkeys[(2*dec_counter)+1];
 			dec_a_s_val = subkeys[(2*dec_counter)];
 
-			new_B = B_rot_out_dec ^ A;
-			new_A = A_rot_out_dec ^ new_B;
+			new_B_dec = B_rot_out_dec ^ A;
+			new_A_dec = A_rot_out_dec ^ new_B_dec;
 			//decryption logic
 		end
 		DECRYPT_7: begin
@@ -318,8 +332,8 @@ always_comb begin
 			dec_b_s_val = subkeys[(2*dec_counter)+1];
 			dec_a_s_val = subkeys[(2*dec_counter)];
 
-			new_B = B_rot_out_dec ^ A;
-			new_A = A_rot_out_dec ^ new_B;
+			new_B_dec = B_rot_out_dec ^ A;
+			new_A_dec = A_rot_out_dec ^ new_B_dec;
 			//decryption logic
 		end
 		DECRYPT_8: begin
@@ -327,8 +341,8 @@ always_comb begin
 			dec_b_s_val = subkeys[(2*dec_counter)+1];
 			dec_a_s_val = subkeys[(2*dec_counter)];
 
-			new_B = B_rot_out_dec ^ A;
-			new_A = A_rot_out_dec ^ new_B;
+			new_B_dec = B_rot_out_dec ^ A;
+			new_A_dec = A_rot_out_dec ^ new_B_dec;
 			//decryption logic
 		end
 		DECRYPT_9: begin
@@ -336,8 +350,8 @@ always_comb begin
 			dec_b_s_val = subkeys[(2*dec_counter)+1];
 			dec_a_s_val = subkeys[(2*dec_counter)];
 
-			new_B = B_rot_out_dec ^ A;
-			new_A = A_rot_out_dec ^ new_B;
+			new_B_dec = B_rot_out_dec ^ A;
+			new_A_dec = A_rot_out_dec ^ new_B_dec;
 			//decryption logic
 		end
 		DECRYPT_10: begin
@@ -345,8 +359,8 @@ always_comb begin
 			dec_b_s_val = subkeys[(2*dec_counter)+1];
 			dec_a_s_val = subkeys[(2*dec_counter)];
 
-			new_B = B_rot_out_dec ^ A;
-			new_A = A_rot_out_dec ^ new_B;
+			new_B_dec = B_rot_out_dec ^ A;
+			new_A_dec = A_rot_out_dec ^ new_B_dec;
 			//decryption logic
 		end
 		DECRYPT_11: begin
@@ -354,8 +368,8 @@ always_comb begin
 			dec_b_s_val = subkeys[(2*dec_counter)+1];
 			dec_a_s_val = subkeys[(2*dec_counter)];
 
-			new_B = B_rot_out_dec ^ A;
-			new_A = A_rot_out_dec ^ new_B;
+			new_B_dec = B_rot_out_dec ^ A;
+			new_A_dec = A_rot_out_dec ^ new_B_dec;
 			//decryption logic
 		end
 		DECRYPT_12: begin
@@ -363,8 +377,8 @@ always_comb begin
 			dec_b_s_val = subkeys[(2*dec_counter)+1];
 			dec_a_s_val = subkeys[(2*dec_counter)];
 
-			new_B = B_rot_out_dec ^ A;
-			new_A = A_rot_out_dec ^ new_B;
+			new_B_dec = B_rot_out_dec ^ A;
+			new_A_dec = A_rot_out_dec ^ new_B_dec;
 			//decryption logic
 		end
 		DECRYPT_13: begin
@@ -372,8 +386,8 @@ always_comb begin
 			dec_b_s_val = subkeys[(2*dec_counter)+1];
 			dec_a_s_val = subkeys[(2*dec_counter)];
 
-			new_B = B_rot_out_dec ^ A;
-			new_A = A_rot_out_dec ^ new_B;
+			new_B_dec = B_rot_out_dec ^ A;
+			new_A_dec = A_rot_out_dec ^ new_B_dec;
 			//decryption logic
 		end
 		DECRYPT_14: begin
@@ -381,8 +395,8 @@ always_comb begin
 			dec_b_s_val = subkeys[(2*dec_counter)+1];
 			dec_a_s_val = subkeys[(2*dec_counter)];
 
-			new_B = B_rot_out_dec ^ A;
-			new_A = A_rot_out_dec ^ new_B;
+			new_B_dec = B_rot_out_dec ^ A;
+			new_A_dec = A_rot_out_dec ^ new_B_dec;
 			//decryption logic
 		end
 		DECRYPT_15: begin
@@ -390,8 +404,8 @@ always_comb begin
 			dec_b_s_val = subkeys[(2*dec_counter)+1];
 			dec_a_s_val = subkeys[(2*dec_counter)];
 
-			new_B = B_rot_out_dec ^ A;
-			new_A = A_rot_out_dec ^ new_B;
+			new_B_dec = B_rot_out_dec ^ A;
+			new_A_dec = A_rot_out_dec ^ new_B_dec;
 			//decryption logic
 		end
 
@@ -400,18 +414,12 @@ always_comb begin
 			dec_b_s_val = subkeys[(2*dec_counter)+1];
 			dec_a_s_val = subkeys[(2*dec_counter)];
 
-			new_B = B_rot_out_dec ^ A;
-			new_A = A_rot_out_dec ^ new_B;
+			new_B_dec = B_rot_out_dec ^ A;
+			new_A_dec = A_rot_out_dec ^ new_B_dec;
             //decryption logic
         end
 
-
-
-    endcase    
-    
+    endcase
 end
-
-
-
 
 endmodule

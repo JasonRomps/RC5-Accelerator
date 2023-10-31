@@ -83,8 +83,8 @@ logic [32:0] shift_reg_outputs;
   
   always_ff @(posedge clk or posedge rst) begin
     if (rst) begin
-      shift_reg_inputs <= 0;
-      shift_reg_outputs <= 32'b0;
+      shift_reg_inputs <= 168'd0;
+      shift_reg_outputs <= 33'b0;
     end
     else if (scan_en) begin
       shift_reg_inputs <= {shift_reg_inputs[166:0], scan_in};
@@ -106,8 +106,8 @@ always_comb begin
         load_key_in = shift_reg_inputs[165];
         start_encrypt_in = shift_reg_inputs[166];
         start_decrypt_in = shift_reg_inputs[167];
-        d_out = 0;
-        done = 0;
+        d_out = 32'd0;
+        done = 1'b0;
     end
     else begin
         key_in = key;
